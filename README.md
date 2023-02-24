@@ -8,16 +8,15 @@ Automatically generate LNG-like contents based on LNG streaming data
 # Technical 
 
 1. Data Collection & Parsing 
-- [x] Grab latest LNG video informations (e.g., URL and publish date)  
+- [x] Download audio files with its original video informations (e.g., title, URL, and publish date)
 
-*Pre-requisite: put your Google Cloud Youtube API in `obtain_latest_video_infos.py`*
+*Pre-requisite: put your Google Cloud Youtube API in `download_audio_files.py`*
 ```bash
-$ python3 obtain_latest_video_infos.py 
+$ python3 download_audio_files.py 
 ```
-Results will be stored in tables with two formats supported, default paths are `latest_video_infos.md` and `latest_video_infos.csv`
+Results will be stored in tables with two formats supported, default paths are `audio_infos.md` and `audio_infos.csv`
 
-- [ ] Download audio files
-- [ ] Generate transcripts based on audio files
+- [ ] Generate transcripts based on audio files (e.g., 雅婷逐字稿)
 
 2. Model Training
 - [ ] Select & download suitable LLM
@@ -28,3 +27,4 @@ Results will be stored in tables with two formats supported, default paths are `
 - [ ] Developer & construct website locally
 - [ ] Deploy on cloud
 - [ ] Address performance issue if any 
+- [ ] Make this repository re-producible (e.g., providing environments or containerization)
