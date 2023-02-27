@@ -18,7 +18,7 @@ $ python3 download_audio_files.py
 ```
 Results will be stored in tables with two formats supported, default paths are `audio_infos.md` and `audio_infos.csv`
 
-- [ ] Generate transcripts based on audio files (e.g., 雅婷逐字稿)
+- [ ] Transcribe based on audio files (e.g., 雅婷逐字稿) -- [candidates evaluation](transcribe_candidates.md)
 
 2. Model Training
 - [ ] Select & download suitable LLM
@@ -29,4 +29,4 @@ Results will be stored in tables with two formats supported, default paths are `
 - [ ] Developer & construct website locally
 - [ ] Deploy on cloud
 - [ ] Address performance issue if any 
-- [ ] Make this repository re-producible (e.g., docker)
+- [ ] Make this repository re-producible (e.g., cuda & docker)
