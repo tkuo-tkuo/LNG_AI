@@ -29,4 +29,4 @@ Results will be stored in tables with two formats supported, default paths are `
 - [ ] Developer & construct website locally
 - [ ] Deploy on cloud
 - [ ] Address performance issue if any 
-- [ ] Make this repository re-producible (e.g., cuda & docker)
+- [ ] Make this repository re-producible (e.g., dump the conda environment you used for development)

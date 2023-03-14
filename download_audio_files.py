@@ -5,8 +5,11 @@ import os
 import requests
 import pytube
 
+from pydub import AudioSegment
 
+# TODO: read API_KEY from secret file (that should be included in .gitingore)
 YT_API_KEY = "PLACE YOUR GOOGLE CLOUD YOUTUBE API KEY HERE"
+ONE_MINUTE_IN_MILLISECONDS = 1 * 60 * 1000
 
 
 def main():
@@ -22,8 +25,8 @@ def main():
     store_as_html(audio_infos, "audio_infos.md")
     store_as_csv(audio_infos, "audio_infos.csv")
 
-    # Clean-up potential intermediate mp4 videos
-    os.system('rm *.mp4')
+    # Clean-up potential intermediate .3gpp raw files
+    os.system('rm *.3gpp')
 
 
 class YoutubeAudioFetcher():
@@ -107,48 +110,58 @@ class YoutubeAudioFetcher():
     def _parse_videos_api_response_and_download_audio(self, resp_json):
         item = resp_json['items'][0]
         youtube_video_url = f"https://www.youtube.com/watch?v={item['id']}"
-        audio_file_path = f"audio_files/{item['id']}.mp3"
-        is_download_successful = self._download_audio_file(
-            youtube_video_url, audio_file_path)
+        audio_full_file_path = f"audio_files/{item['id']}.mp3"
+        audio_preview_file_path = f"audio_files/preview_{item['id']}.mp3"
 
-        if is_download_successful:
-            print(
-                f"Successfully downloaded audio at {audio_file_path} {item['snippet']['title']}")
+        raw_output_file_path = self._download_audio_file(youtube_video_url)
+
+        if raw_output_file_path:
+            print(f"Successfully downloaded {item['snippet']['title']}")
+            self._transfer_raw_to_audio_file(raw_output_file_path,
+                                             audio_full_file_path, audio_preview_file_path)
         else:
             print(
                 f"Something wrong while downloading {item['snippet']['title']}")
-            audio_file_path = ''
+            audio_full_file_path = ''
+            audio_preview_file_path = ''
 
         audio_info = {
             'id': item['id'],
             'title': item['snippet']['title'],
             'publishedAt': item['snippet']['publishedAt'],
             'audio_source_url': youtube_video_url,
-            'audio_file_path': audio_file_path,
+            'audio_full_file_path': audio_full_file_path,
+            'audio_preview_file_path': audio_preview_file_path,
         }
         return audio_info
 
-    def _download_audio_file(self, youtube_video_url: str, audio_file_path: str):
+    def _download_audio_file(self, youtube_video_url: str) -> str:
         try:
-            output_file_path = pytube.YouTube(youtube_video_url).streams.filter(
-                only_audio=True).first().download()
-            os.rename(output_file_path, audio_file_path)
-            return True
+            output_file_path = pytube.YouTube(
+                youtube_video_url).streams.first().download()
+            return output_file_path
         # lazy to specify exception type(s) for now
         # catch all potential errors
         except:
-            return False
+            return ""
 
+    def _transfer_raw_to_audio_file(self, raw_output_file_path: str, audio_full_file_path: str, audio_preview_file_path: str):
+        audio = AudioSegment.from_file(raw_output_file_path)
+        audio.export(audio_full_file_path, format="mp3")
+        one_minute_preview_audio = audio[:ONE_MINUTE_IN_MILLISECONDS]
+        one_minute_preview_audio.export(audio_preview_file_path, format="mp3")
 
 def store_as_html(video_infos, store_file_path):
     '''helper function to store latest video infos in md file'''
     with open(store_file_path, "w", encoding="utf-8") as html_file:
         html_file.write(
-            '| Title | Audio file path | Published at | ID | Source URL |\n')
+            '| Title | Audio file (full) | Published at | ID | Source URL |\n')
         html_file.write('| ------ | ------ | --- | --- | ------ |\n')
+        # TODO: add relative links for audio files
+        # TODO: add preview column
         for video_info in video_infos:
             html_file.write(
-                f'| {video_info["title"]} | {video_info["audio_file_path"]} '
+                f'| {video_info["title"]} | {video_info["audio_full_file_path"]} '
                 f'| {video_info["publishedAt"]} | {video_info["id"]} '
                 f'| {video_info["audio_source_url"]} |\n')
 
@@ -157,10 +170,11 @@ def store_as_csv(video_infos, store_file_path):
     '''helper function to store latest video infos in csv file'''
     with open(store_file_path, "w", encoding="utf-8") as csv_file:
         csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(["Title", "Audio file path",
+        csv_writer.writerow(["Title", "Audio file (full)",
                             "Published at", "ID", "Source URL"])
-
-        rows = [[video_info["title"], video_info["audio_file_path"], video_info["publishedAt"],
+        
+        # TODO: add preview column
+        rows = [[video_info["title"], video_info["audio_full_file_path"], video_info["publishedAt"],
                  video_info["id"], video_info["audio_source_url"]] for video_info in video_infos]
         csv_writer.writerows(rows)
 
