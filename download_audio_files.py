@@ -5,18 +5,19 @@ import os
 import requests
 import pytube
 
+from dotenv import load_dotenv
 from pydub import AudioSegment
 
-# TODO: read API_KEY from secret file (that should be included in .gitingore)
-YT_API_KEY = "PLACE YOUR GOOGLE CLOUD YOUTUBE API KEY HERE"
 ONE_MINUTE_IN_MILLISECONDS = 1 * 60 * 1000
 
 
 def main():
     """Grab audio informations given youtube channel ID & store results"""
+    load_dotenv()
+    yt_api_key = os.getenv('yt_api_key')
     yt_channel_id = "UCKngQgSGHd3Hp3nkPs15YSA"  # LNG
 
-    lng_audio_fetcher = YoutubeAudioFetcher(YT_API_KEY)
+    lng_audio_fetcher = YoutubeAudioFetcher(yt_api_key)
     num_of_request_results = 10
     audio_infos = lng_audio_fetcher.obtain_audio_infos(
         yt_channel_id, num_of_request_results)

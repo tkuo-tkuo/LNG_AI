@@ -12,7 +12,7 @@ Automatically generate LNG-like contents based on LNG streaming data
 1. Data Collection & Parsing 
 - [x] Download audio files with its original video informations (e.g., title, URL, and publish date)
 
-*Pre-requisite: put your Google Cloud Youtube API in `download_audio_files.py`*
+*Pre-requisite: put your Google Cloud Youtube API in `.env`*
 ```bash
 $ python3 download_audio_files.py 
 ```
