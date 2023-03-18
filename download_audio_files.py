@@ -3,12 +3,15 @@ import csv
 import logging
 import os
 import requests
-import pytube
 
 from dotenv import load_dotenv
 from pydub import AudioSegment
+import pytube
+
 
 ONE_MINUTE_IN_MILLISECONDS = 1 * 60 * 1000
+ONE_HOUR_IN_MILLISECONDS = 1 * 60 * ONE_MINUTE_IN_MILLISECONDS
+AUDIO_FILE_ROOT = "audio_files"
 
 
 def main():
@@ -111,28 +114,26 @@ class YoutubeAudioFetcher():
     def _parse_videos_api_response_and_download_audio(self, resp_json):
         item = resp_json['items'][0]
         youtube_video_url = f"https://www.youtube.com/watch?v={item['id']}"
-        audio_full_file_path = f"audio_files/{item['id']}.mp3"
-        audio_preview_file_path = f"audio_files/preview_{item['id']}.mp3"
+        audio_file_dir = f"{AUDIO_FILE_ROOT}/{item['id']}"
 
         raw_output_file_path = self._download_audio_file(youtube_video_url)
 
         if raw_output_file_path:
             print(f"Successfully downloaded {item['snippet']['title']}")
-            self._transfer_raw_to_audio_file(raw_output_file_path,
-                                             audio_full_file_path, audio_preview_file_path)
+            # transfer video to audio & cut audio as well
+            self._transfer_raw_to_audio_file(
+                raw_output_file_path, audio_file_dir)
         else:
             print(
                 f"Something wrong while downloading {item['snippet']['title']}")
-            audio_full_file_path = ''
-            audio_preview_file_path = ''
+            audio_file_dir = ''
 
         audio_info = {
             'id': item['id'],
             'title': item['snippet']['title'],
             'publishedAt': item['snippet']['publishedAt'],
             'audio_source_url': youtube_video_url,
-            'audio_full_file_path': audio_full_file_path,
-            'audio_preview_file_path': audio_preview_file_path,
+            'audio_file_dir': audio_file_dir,
         }
         return audio_info
 
@@ -146,23 +147,50 @@ class YoutubeAudioFetcher():
         except:
             return ""
 
-    def _transfer_raw_to_audio_file(self, raw_output_file_path: str, audio_full_file_path: str, audio_preview_file_path: str):
+    def _transfer_raw_to_audio_file(self, raw_output_file_path: str, audio_file_dir: str):
+        if not os.path.exists(audio_file_dir):
+            os.makedirs(audio_file_dir)
+
+        # Full audio
+        print("processing full audio")
         audio = AudioSegment.from_file(raw_output_file_path)
-        audio.export(audio_full_file_path, format="mp3")
+        audio.export(f"{audio_file_dir}/full.mp3", format="mp3")
+
+        # 1-minute preview
+        print("processing 1-minute preview audio")
         one_minute_preview_audio = audio[:ONE_MINUTE_IN_MILLISECONDS]
-        one_minute_preview_audio.export(audio_preview_file_path, format="mp3")
+        one_minute_preview_audio.export(
+            f"{audio_file_dir}/one_minute_preview.mp3", format="mp3")
+
+        # Due to the limitation of Whisper API, we need to divide audio files (max 25M)
+        # Hence, we'll split full audio into 1-hour audio chucks
+        print("processing audio chucks by hours")
+        total_length_in_milliseconds = len(audio)
+        i = 0
+        # next hour still not yet finish
+        while (i+1) * ONE_HOUR_IN_MILLISECONDS < total_length_in_milliseconds:
+            begin = i * ONE_HOUR_IN_MILLISECONDS
+            end = (i+1) * ONE_HOUR_IN_MILLISECONDS
+            one_hour_chuck_audio = audio[begin:end]
+            one_hour_chuck_audio.export(
+                f"{audio_file_dir}/{i+1}_hour_chuck.mp3", format="mp3")
+            i += 1
+
+        last_hour_check_audio = audio[i * ONE_HOUR_IN_MILLISECONDS:]
+        last_hour_check_audio.export(
+            f"{audio_file_dir}/{i+1}_hour_chuck.mp3", format="mp3")
+
 
 def store_as_html(video_infos, store_file_path):
     '''helper function to store latest video infos in md file'''
     with open(store_file_path, "w", encoding="utf-8") as html_file:
         html_file.write(
-            '| Title | Audio file (full) | Published at | ID | Source URL |\n')
+            '| Title | Audio Dir | Published at | ID | Source URL |\n')
         html_file.write('| ------ | ------ | --- | --- | ------ |\n')
         # TODO: add relative links for audio files
-        # TODO: add preview column
         for video_info in video_infos:
             html_file.write(
-                f'| {video_info["title"]} | {video_info["audio_full_file_path"]} '
+                f'| {video_info["title"]} | {video_info["audio_file_dir"]} '
                 f'| {video_info["publishedAt"]} | {video_info["id"]} '
                 f'| {video_info["audio_source_url"]} |\n')
 
@@ -171,11 +199,10 @@ def store_as_csv(video_infos, store_file_path):
     '''helper function to store latest video infos in csv file'''
     with open(store_file_path, "w", encoding="utf-8") as csv_file:
         csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(["Title", "Audio file (full)",
+        csv_writer.writerow(["Title", "Audio Dir",
                             "Published at", "ID", "Source URL"])
-        
-        # TODO: add preview column
-        rows = [[video_info["title"], video_info["audio_full_file_path"], video_info["publishedAt"],
+
+        rows = [[video_info["title"], video_info["audio_file_dir"], video_info["publishedAt"],
                  video_info["id"], video_info["audio_source_url"]] for video_info in video_infos]
         csv_writer.writerows(rows)
 
