@@ -29,6 +29,7 @@ def main():
     store_as_html(audio_infos, "audio_infos.md")
     store_as_csv(audio_infos, "audio_infos.csv")
 
+    # TODO: delete this 
     # Clean-up potential intermediate .3gpp raw files
     os.system('rm *.3gpp')
 
@@ -138,7 +139,10 @@ class YoutubeAudioFetcher():
         return audio_info
 
     def _download_audio_file(self, youtube_video_url: str) -> str:
+        # TODO: only download if not exist
+        # TODO: create new folder called raw videos 
         try:
+            # known issue: https://github.com/pytube/pytube/issues/1498
             output_file_path = pytube.YouTube(
                 youtube_video_url).streams.first().download()
             return output_file_path
@@ -154,16 +158,15 @@ class YoutubeAudioFetcher():
         # Full audio
         print("processing full audio")
         audio = AudioSegment.from_file(raw_output_file_path)
-        audio.export(f"{audio_file_dir}/full.mp3", format="mp3")
+        self._export_if_not_exist(audio, f"{audio_file_dir}/full.mp3")
 
         # 1-minute preview
         print("processing 1-minute preview audio")
         one_minute_preview_audio = audio[:ONE_MINUTE_IN_MILLISECONDS]
-        one_minute_preview_audio.export(
-            f"{audio_file_dir}/one_minute_preview.mp3", format="mp3")
+        self._export_if_not_exist(
+            one_minute_preview_audio, f"{audio_file_dir}/one_minute_preview.mp3")
 
-        # Due to the limitation of Whisper API, we need to divide audio files (max 25M)
-        # Hence, we'll split full audio into 1-hour audio chucks
+        # 1-hour audio chucks
         print("processing audio chucks by hours")
         total_length_in_milliseconds = len(audio)
         i = 0
@@ -172,13 +175,21 @@ class YoutubeAudioFetcher():
             begin = i * ONE_HOUR_IN_MILLISECONDS
             end = (i+1) * ONE_HOUR_IN_MILLISECONDS
             one_hour_chuck_audio = audio[begin:end]
-            one_hour_chuck_audio.export(
-                f"{audio_file_dir}/{i+1}_hour_chuck.mp3", format="mp3")
+            self._export_if_not_exist(
+                one_hour_chuck_audio,  f"{audio_file_dir}/{i+1}_hour_chuck.mp3")
             i += 1
 
         last_hour_check_audio = audio[i * ONE_HOUR_IN_MILLISECONDS:]
-        last_hour_check_audio.export(
-            f"{audio_file_dir}/{i+1}_hour_chuck.mp3", format="mp3")
+        self._export_if_not_exist(
+            last_hour_check_audio,  f"{audio_file_dir}/{i+1}_hour_chuck.mp3")
+
+    def _export_if_not_exist(self, audio, export_path):
+        if os.path.isfile(export_path):
+            print(f"{export_path} already exists, avoid exporting")
+            return
+
+        print(f"exporting audio to {export_path}")
+        audio.export(export_path, format="mp3")
 
 
 def store_as_html(video_infos, store_file_path):
