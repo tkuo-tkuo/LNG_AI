@@ -11,6 +11,7 @@ import pytube
 
 ONE_MINUTE_IN_MILLISECONDS = 1 * 60 * 1000
 ONE_HOUR_IN_MILLISECONDS = 1 * 60 * ONE_MINUTE_IN_MILLISECONDS
+FIVE_MINUTES_IN_MILLISECONDS = 5 * ONE_MINUTE_IN_MILLISECONDS
 AUDIO_FILE_ROOT = "audio_files"
 RAW_3GG_FILE_ROOT = "raw_3gg_files"
 
@@ -170,6 +171,9 @@ class YoutubeAudioFetcher():
         self._export_if_not_exist(
             one_minute_preview_audio, f"{audio_file_dir}/one_minute_preview.mp3")
 
+        # TODO: below two code snippets (1-hour and 5-miutes are highly similar),
+        # should pack in a method if neededgi
+
         # 1-hour audio chucks
         print("processing audio chucks by hours")
         total_length_in_milliseconds = len(audio)
@@ -186,6 +190,23 @@ class YoutubeAudioFetcher():
         last_hour_check_audio = audio[i * ONE_HOUR_IN_MILLISECONDS:]
         self._export_if_not_exist(
             last_hour_check_audio,  f"{audio_file_dir}/{i+1}_hour_chuck.mp3")
+
+        # 5-minutes audio chucks
+        print("processing audio chucks per 5 minutes ")
+        total_length_in_milliseconds = len(audio)
+        i = 0
+        # next hour still not yet finish
+        while (i+1) * FIVE_MINUTES_IN_MILLISECONDS < total_length_in_milliseconds:
+            begin = i * FIVE_MINUTES_IN_MILLISECONDS
+            end = (i+1) * FIVE_MINUTES_IN_MILLISECONDS
+            one_hour_chuck_audio = audio[begin:end]
+            self._export_if_not_exist(
+                one_hour_chuck_audio,  f"{audio_file_dir}/{i+1}_5_mins_chuck.mp3")
+            i += 1
+
+        last_hour_check_audio = audio[i * FIVE_MINUTES_IN_MILLISECONDS:]
+        self._export_if_not_exist(
+            last_hour_check_audio,  f"{audio_file_dir}/{i+1}_5_mins_chuck.mp3")
 
     def _export_if_not_exist(self, audio, export_path):
         if os.path.isfile(export_path):
