@@ -5,6 +5,8 @@ import enum
 from dotenv import load_dotenv
 import openai
 
+# TODO: add detection mechanism to avoid suspicious txt (repetitive word occurance)
+
 
 # TODO: place all constants/enums in a single file (e.g., constants.py)
 AUDIO_FILE_ROOT = "audio_files"
@@ -13,7 +15,8 @@ AUDIO_FILE_ROOT = "audio_files"
 class AudioFileKeyword(enum.Enum):
     """Enum for audio files keyword (substr)"""
     PREVIEW = "one_minute_preview"
-    HOUR_CHECK = "_hour_"
+    HOUR_CHUCK = "_hour_chuck"
+    FIVE_MINUTES_CHUCK = "_5_mins_chuck"
 
 
 class TranscribeMode(enum.Enum):
@@ -28,10 +31,10 @@ def main():
     keys = {"openai_api_key": os.getenv("OPENAI_API_KEY")}
     audio_transcriber = AudioTranscriber(TranscribeMode.WHISPER, keys)
 
+    is_preview_only = False
     audio_ids = os.listdir(AUDIO_FILE_ROOT)
     for audio_id in audio_ids:
         audio_file_dir = f"{AUDIO_FILE_ROOT}/{audio_id}"
-        is_preview_only = True
         audio_transcriber.transcribe_dir(audio_file_dir, is_preview_only)
 
 
@@ -48,6 +51,7 @@ class AudioTranscriber():
         self.key = keys
 
     def transcribe_dir(self, audio_file_dir: str, is_preview_only: bool):
+        """Transcribe eligible mp3 files in the given directory"""
         file_names = os.listdir(audio_file_dir)
         for file_name in file_names:
             file_path = f"{audio_file_dir}/{file_name}"
@@ -58,18 +62,19 @@ class AudioTranscriber():
                 continue
 
             preview_condition = AudioFileKeyword.PREVIEW.value in file_name
-            hour_chuck_condition = (
-                AudioFileKeyword.HOUR_CHECK.value in file_name) and (not is_preview_only)
+            five_minutes_chuck_condition = (
+                AudioFileKeyword.FIVE_MINUTES_CHUCK.value in file_name) and (not is_preview_only)
 
-            if preview_condition or hour_chuck_condition:
-                self._transcribe_file(file_path)
-            else:
-                print(
-                    f"not applicable file path: {file_path} (is_preview_only={is_preview_only})")
+            if not (preview_condition or five_minutes_chuck_condition):
+                print(f"not applicable file path: {file_path}",
+                      f"(is_preview_only={is_preview_only})")
+                continue
+
+            self._transcribe_file(file_path)
 
     def _transcribe_file(self, audio_path: str):
         # Compute output path
-        (path_wo_ext, ext) = os.path.splitext(audio_path)
+        (path_wo_ext, _) = os.path.splitext(audio_path)
         path_items = path_wo_ext.split('/')
         output_txt_dir = "/".join(path_items[:-1]) + "/" + self.mode.value
         output_txt_path = output_txt_dir + "/" + path_items[-1] + ".txt"
@@ -83,7 +88,7 @@ class AudioTranscriber():
             return
 
         # Transcribe & Parse
-        print(f"==> start transcribing {audio_path} to ",
+        print(f"==> start transcribing {audio_path} to",
               f"{output_txt_path} (not yet exist)")
         if self.mode == TranscribeMode.WHISPER:
             raw_result_str = self._whisper_transribe_file(audio_path)
