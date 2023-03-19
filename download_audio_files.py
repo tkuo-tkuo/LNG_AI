@@ -12,6 +12,7 @@ import pytube
 ONE_MINUTE_IN_MILLISECONDS = 1 * 60 * 1000
 ONE_HOUR_IN_MILLISECONDS = 1 * 60 * ONE_MINUTE_IN_MILLISECONDS
 AUDIO_FILE_ROOT = "audio_files"
+RAW_3GG_FILE_ROOT = "raw_3gg_files"
 
 
 def main():
@@ -29,10 +30,6 @@ def main():
     store_as_html(audio_infos, "audio_infos.md")
     store_as_csv(audio_infos, "audio_infos.csv")
 
-    # TODO: delete this 
-    # Clean-up potential intermediate .3gpp raw files
-    os.system('rm *.3gpp')
-
 
 class YoutubeAudioFetcher():
     """Fetcher to grab audio files based on latest videos of the given Youtube channel"""
@@ -40,6 +37,9 @@ class YoutubeAudioFetcher():
     def __init__(self, api_key):
         self.base_url = "https://www.googleapis.com/youtube/v3"
         self.api_key = api_key
+
+        if not os.path.exists(RAW_3GG_FILE_ROOT):
+            os.makedirs(RAW_3GG_FILE_ROOT)
 
     def obtain_audio_infos(self, channel_id: str, num_of_request_results: int):
         """Fetches (maximum 50) audios informations frrom latest videos given a channel ID
@@ -116,14 +116,12 @@ class YoutubeAudioFetcher():
         item = resp_json['items'][0]
         youtube_video_url = f"https://www.youtube.com/watch?v={item['id']}"
         audio_file_dir = f"{AUDIO_FILE_ROOT}/{item['id']}"
+        raw_3gg_file_path = f"{RAW_3GG_FILE_ROOT}/{item['id']}.3gg"
 
-        raw_output_file_path = self._download_audio_file(youtube_video_url)
-
-        if raw_output_file_path:
+        if self._download_audio_file(youtube_video_url, raw_3gg_file_path):
             print(f"Successfully downloaded {item['snippet']['title']}")
             # transfer video to audio & cut audio as well
-            self._transfer_raw_to_audio_file(
-                raw_output_file_path, audio_file_dir)
+            self._transfer_raw_to_audio_file(raw_3gg_file_path, audio_file_dir)
         else:
             print(
                 f"Something wrong while downloading {item['snippet']['title']}")
@@ -138,26 +136,32 @@ class YoutubeAudioFetcher():
         }
         return audio_info
 
-    def _download_audio_file(self, youtube_video_url: str) -> str:
-        # TODO: only download if not exist
-        # TODO: create new folder called raw videos 
+    def _download_audio_file(self, youtube_video_url: str, raw_3gg_file_path: str) -> bool:
+        if os.path.isfile(raw_3gg_file_path):
+            print(f"{raw_3gg_file_path} already exists, avoid downloading")
+            return True
+
+        # Only download if not exist
         try:
             # known issue: https://github.com/pytube/pytube/issues/1498
-            output_file_path = pytube.YouTube(
-                youtube_video_url).streams.first().download()
-            return output_file_path
+            items = raw_3gg_file_path.split('/')
+            file_dir, file_name = items[0], items[1]
+            _ = pytube.YouTube(youtube_video_url).streams.first().download(
+                output_path=file_dir, filename=file_name)
         # lazy to specify exception type(s) for now
         # catch all potential errors
         except:
-            return ""
+            return False
 
-    def _transfer_raw_to_audio_file(self, raw_output_file_path: str, audio_file_dir: str):
+        return True
+
+    def _transfer_raw_to_audio_file(self, raw_3gg_file_path: str, audio_file_dir: str):
         if not os.path.exists(audio_file_dir):
             os.makedirs(audio_file_dir)
 
         # Full audio
         print("processing full audio")
-        audio = AudioSegment.from_file(raw_output_file_path)
+        audio = AudioSegment.from_file(raw_3gg_file_path)
         self._export_if_not_exist(audio, f"{audio_file_dir}/full.mp3")
 
         # 1-minute preview
