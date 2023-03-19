@@ -9,8 +9,8 @@ Automatically generate LNG-like contents based on LNG streaming data
 
 # Technical 
 
-0. Setup  
-- [x] Make this repository re-producible (e.g., dump the conda environment you used for development)
+## Setup  
+- [x] Support conda environment reconstruction
 
 Create your environment by conda
 ```bash
@@ -24,7 +24,7 @@ export yt_api_key=...
 export OPENAI_API_KEY=...
 ```
 
-1. Data Collection & Parsing 
+## Data Collection & Parsing 
 - [x] Download audio files with its original video informations (e.g., title, URL, and publish date)
 - [ ] Transcribe based on audio files (e.g., 雅婷逐字稿) -- [candidates evaluation](transcribe_candidates.md)
 
@@ -35,12 +35,12 @@ $ python3 download_audio_files.py
 ```
 Results will be stored in tables with two formats supported, default paths are `audio_infos.md` and `audio_infos.csv`
 
-2. Model Training
+## Model Training
 - [ ] Select & download suitable LLM
 - [ ] Fine-tune by LNG data
 - [ ] Manually verify results & gradually improve
 
-3. Provide user-friendly UI for public
+## Provide user-friendly UI for public
 - [ ] Developer & construct website locally
 - [ ] Deploy on cloud
 - [ ] Address performance issue if any 
