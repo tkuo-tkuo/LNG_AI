@@ -26,7 +26,7 @@ export OPENAI_API_KEY=...
 
 ## Data Collection & Parsing 
 - [x] Download audio files with its original video informations (e.g., title, URL, and publish date)
-- [ ] Transcribe based on audio files (e.g., 雅婷逐字稿) -- [candidates evaluation](transcribe_candidates.md)
+- [x] Transcribe based on audio files (e.g., Whisper), see more details in [candidates evaluation](transcribe_candidates.md)
 
 Download audio files
 
@@ -34,6 +34,12 @@ Download audio files
 $ python3 download_audio_files.py 
 ```
 Results will be stored in tables with two formats supported, default paths are `audio_infos.md` and `audio_infos.csv`
+
+Transcribe audio files
+
+```bash
+$ python3 transcribe_audio_files.py 
+```
 
 ## Model Training
 - [ ] Select & download suitable LLM
