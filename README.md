@@ -9,16 +9,31 @@ Automatically generate LNG-like contents based on LNG streaming data
 
 # Technical 
 
+0. Setup  
+- [x] Make this repository re-producible (e.g., dump the conda environment you used for development)
+
+Create your environment by conda
+```bash
+$ conda env create -f environment.yml
+$ conda activate lng_ai
+```
+
+Create `.env` and place your keys within like
+```bash
+export yt_api_key=...
+export OPENAI_API_KEY=...
+```
+
 1. Data Collection & Parsing 
 - [x] Download audio files with its original video informations (e.g., title, URL, and publish date)
+- [ ] Transcribe based on audio files (e.g., 雅婷逐字稿) -- [candidates evaluation](transcribe_candidates.md)
 
-*Pre-requisite: put your Google Cloud Youtube API in `.env`*
+Download audio files
+
 ```bash
 $ python3 download_audio_files.py 
 ```
 Results will be stored in tables with two formats supported, default paths are `audio_infos.md` and `audio_infos.csv`
-
-- [ ] Transcribe based on audio files (e.g., 雅婷逐字稿) -- [candidates evaluation](transcribe_candidates.md)
 
 2. Model Training
 - [ ] Select & download suitable LLM
@@ -29,4 +44,3 @@ Results will be stored in tables with two formats supported, default paths are `
 - [ ] Developer & construct website locally
 - [ ] Deploy on cloud
 - [ ] Address performance issue if any 
-- [ ] Make this repository re-producible (e.g., dump the conda environment you used for development)
