@@ -27,6 +27,7 @@ export OPENAI_API_KEY=...
 ## Data Collection & Parsing 
 - [x] Download audio files with its original video informations (e.g., title, URL, and publish date)
 - [x] Transcribe based on audio files (e.g., Whisper), see more details in [candidates evaluation](transcribe_candidates.md)
+- [ ] Convert transcript into prompt/completion JSONL training dataset ([OpenAI dataset preparation](https://platform.openai.com/docs/guides/fine-tuning/preparing-your-dataset))
 
 Download audio files
 
@@ -42,7 +43,7 @@ $ python3 transcribe_audio_files.py
 ```
 
 ## Model Training
-- [ ] Select & download suitable LLM
+- [x] Select & download suitable LLM (fine-tuned [Babbage model](https://openai.com/pricing) by OpenAI)
 - [ ] Fine-tune by LNG data
 - [ ] Manually verify results & gradually improve
 
