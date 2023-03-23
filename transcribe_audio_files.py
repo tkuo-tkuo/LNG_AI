@@ -5,8 +5,6 @@ import enum
 from dotenv import load_dotenv
 import openai
 
-# TODO: add detection mechanism to avoid suspicious txt (repetitive word occurance)
-
 
 # TODO: place all constants/enums in a single file (e.g., constants.py)
 AUDIO_FILE_ROOT = "audio_files"
