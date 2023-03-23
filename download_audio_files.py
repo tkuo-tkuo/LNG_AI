@@ -8,12 +8,7 @@ from dotenv import load_dotenv
 from pydub import AudioSegment
 import pytube
 
-
-ONE_MINUTE_IN_MILLISECONDS = 1 * 60 * 1000
-ONE_HOUR_IN_MILLISECONDS = 1 * 60 * ONE_MINUTE_IN_MILLISECONDS
-FIVE_MINUTES_IN_MILLISECONDS = 5 * ONE_MINUTE_IN_MILLISECONDS
-AUDIO_FILE_ROOT = "audio_files"
-RAW_3GG_FILE_ROOT = "raw_3gg_files"
+import constants
 
 
 def main():
@@ -39,8 +34,8 @@ class YoutubeAudioFetcher():
         self.base_url = "https://www.googleapis.com/youtube/v3"
         self.api_key = api_key
 
-        if not os.path.exists(RAW_3GG_FILE_ROOT):
-            os.makedirs(RAW_3GG_FILE_ROOT)
+        if not os.path.exists(constants.RAW_3GG_FILE_ROOT):
+            os.makedirs(constants.RAW_3GG_FILE_ROOT)
 
     def obtain_audio_infos(self, channel_id: str, num_of_request_results: int):
         """Fetches (maximum 50) audios informations frrom latest videos given a channel ID
@@ -116,8 +111,8 @@ class YoutubeAudioFetcher():
     def _parse_videos_api_response_and_download_audio(self, resp_json):
         item = resp_json['items'][0]
         youtube_video_url = f"https://www.youtube.com/watch?v={item['id']}"
-        audio_file_dir = f"{AUDIO_FILE_ROOT}/{item['id']}"
-        raw_3gg_file_path = f"{RAW_3GG_FILE_ROOT}/{item['id']}.3gg"
+        audio_file_dir = f"{constants.AUDIO_FILE_ROOT}/{item['id']}"
+        raw_3gg_file_path = f"{constants.RAW_3GG_FILE_ROOT}/{item['id']}.3gg"
 
         if self._download_audio_file(youtube_video_url, raw_3gg_file_path):
             print(f"Successfully downloaded {item['snippet']['title']}")
@@ -167,7 +162,7 @@ class YoutubeAudioFetcher():
 
         # 1-minute preview
         print("processing 1-minute preview audio")
-        one_minute_preview_audio = audio[:ONE_MINUTE_IN_MILLISECONDS]
+        one_minute_preview_audio = audio[:constants.ONE_MINUTE_IN_MILLISECONDS]
         self._export_if_not_exist(
             one_minute_preview_audio, f"{audio_file_dir}/one_minute_preview.mp3")
 
@@ -177,34 +172,36 @@ class YoutubeAudioFetcher():
         # 1-hour audio chucks
         print("processing audio chucks by hours")
         total_length_in_milliseconds = len(audio)
+        one_hour_in_milliseconds = 60 * constants.ONE_MINUTE_IN_MILLISECONDS
         i = 0
         # next hour still not yet finish
-        while (i+1) * ONE_HOUR_IN_MILLISECONDS < total_length_in_milliseconds:
-            begin = i * ONE_HOUR_IN_MILLISECONDS
-            end = (i+1) * ONE_HOUR_IN_MILLISECONDS
+        while (i+1) * one_hour_in_milliseconds < total_length_in_milliseconds:
+            begin = i * one_hour_in_milliseconds
+            end = (i+1) * one_hour_in_milliseconds
             one_hour_chuck_audio = audio[begin:end]
             self._export_if_not_exist(
                 one_hour_chuck_audio,  f"{audio_file_dir}/{i+1}_hour_chuck.mp3")
             i += 1
 
-        last_hour_check_audio = audio[i * ONE_HOUR_IN_MILLISECONDS:]
+        last_hour_check_audio = audio[i * one_hour_in_milliseconds:]
         self._export_if_not_exist(
             last_hour_check_audio,  f"{audio_file_dir}/{i+1}_hour_chuck.mp3")
 
         # 5-minutes audio chucks
         print("processing audio chucks per 5 minutes ")
         total_length_in_milliseconds = len(audio)
+        five_minutes_in_milliseconds = 5 * constants.ONE_MINUTE_IN_MILLISECONDS
         i = 0
         # next hour still not yet finish
-        while (i+1) * FIVE_MINUTES_IN_MILLISECONDS < total_length_in_milliseconds:
-            begin = i * FIVE_MINUTES_IN_MILLISECONDS
-            end = (i+1) * FIVE_MINUTES_IN_MILLISECONDS
+        while (i+1) * five_minutes_in_milliseconds < total_length_in_milliseconds:
+            begin = i * five_minutes_in_milliseconds
+            end = (i+1) * five_minutes_in_milliseconds
             one_hour_chuck_audio = audio[begin:end]
             self._export_if_not_exist(
                 one_hour_chuck_audio,  f"{audio_file_dir}/{i+1}_5_mins_chuck.mp3")
             i += 1
 
-        last_hour_check_audio = audio[i * FIVE_MINUTES_IN_MILLISECONDS:]
+        last_hour_check_audio = audio[i * five_minutes_in_milliseconds:]
         self._export_if_not_exist(
             last_hour_check_audio,  f"{audio_file_dir}/{i+1}_5_mins_chuck.mp3")
 

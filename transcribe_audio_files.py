@@ -1,25 +1,10 @@
 """Python script for transcribe downloaded Youtube audio files"""
 import os
-import enum
 
 from dotenv import load_dotenv
 import openai
 
-
-# TODO: place all constants/enums in a single file (e.g., constants.py)
-AUDIO_FILE_ROOT = "audio_files"
-
-
-class AudioFileKeyword(enum.Enum):
-    """Enum for audio files keyword (substr)"""
-    PREVIEW = "one_minute_preview"
-    HOUR_CHUCK = "_hour_chuck"
-    FIVE_MINUTES_CHUCK = "_5_mins_chuck"
-
-
-class TranscribeMode(enum.Enum):
-    """Enum for available AI transcribing"""
-    WHISPER = "whisper"
+import constants
 
 
 def main():
@@ -27,20 +12,21 @@ def main():
     load_dotenv()
 
     keys = {"openai_api_key": os.getenv("OPENAI_API_KEY")}
-    audio_transcriber = AudioTranscriber(TranscribeMode.WHISPER, keys)
+    audio_transcriber = AudioTranscriber(
+        constants.TranscribeMode.WHISPER, keys)
 
     is_preview_only = False
-    audio_ids = os.listdir(AUDIO_FILE_ROOT)
+    audio_ids = os.listdir(constants.AUDIO_FILE_ROOT)
     for audio_id in audio_ids:
-        audio_file_dir = f"{AUDIO_FILE_ROOT}/{audio_id}"
+        audio_file_dir = f"{constants.AUDIO_FILE_ROOT}/{audio_id}"
         audio_transcriber.transcribe_dir(audio_file_dir, is_preview_only)
 
 
 class AudioTranscriber():
     """Transcribe audio files by AI"""
 
-    def __init__(self, mode: TranscribeMode, keys: dict):
-        if mode == TranscribeMode.WHISPER:
+    def __init__(self, mode: constants.TranscribeMode, keys: dict):
+        if mode == constants.TranscribeMode.WHISPER:
             if not "openai_api_key" in keys:
                 raise KeyError("open_ai_key not exists")
             openai.api_key = keys["openai_api_key"]
@@ -59,9 +45,9 @@ class AudioTranscriber():
             if ext != ".mp3":
                 continue
 
-            preview_condition = AudioFileKeyword.PREVIEW.value in file_name
+            preview_condition = constants.AudioFileKeyword.PREVIEW.value in file_name
             five_minutes_chuck_condition = (
-                AudioFileKeyword.FIVE_MINUTES_CHUCK.value in file_name) and (not is_preview_only)
+                constants.AudioFileKeyword.FIVE_MINUTES_CHUCK.value in file_name) and (not is_preview_only)
 
             if not (preview_condition or five_minutes_chuck_condition):
                 print(f"not applicable file path: {file_path}",
@@ -88,7 +74,7 @@ class AudioTranscriber():
         # Transcribe & Parse
         print(f"==> start transcribing {audio_path} to",
               f"{output_txt_path} (not yet exist)")
-        if self.mode == TranscribeMode.WHISPER:
+        if self.mode == constants.TranscribeMode.WHISPER:
             raw_result_str = self._whisper_transribe_file(audio_path)
             self._whisper_parse_and_store_transcribe_result(
                 raw_result_str, output_txt_path)
