@@ -7,6 +7,7 @@ RAW_3GG_FILE_ROOT = "raw_3gg_files"
 
 class AudioFileKeyword(enum.Enum):
     """Enum for audio files keyword (substr)"""
+    FULL = "full"
     PREVIEW = "one_minute_preview"
     HOUR_CHUCK = "_hour_chuck"
     FIVE_MINUTES_CHUCK = "_5_mins_chuck"

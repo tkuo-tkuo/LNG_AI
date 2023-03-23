@@ -1,2 +1,3 @@
 .env
 raw_3gg_files/
+__pycache__/
