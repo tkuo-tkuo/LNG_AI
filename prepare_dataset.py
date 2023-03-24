@@ -1,6 +1,7 @@
 """Python script for checking data integrity"""
 import os
 import math
+import logging
 
 from dotenv import load_dotenv
 from mutagen.mp3 import MP3
@@ -19,34 +20,56 @@ def main():
 
 
 def check_transcripts():
+    # TODO: later make success_cnt, failure_cnt a class private variable
+    failure_cnt, success_cnt = 0, 0
+
     audio_ids = os.listdir(constants.AUDIO_FILE_ROOT)
     for audio_id in audio_ids:
         audio_file_dir = f"{constants.AUDIO_FILE_ROOT}/{audio_id}"
 
-        # 1-minute transcripit preview 
-        _check_file_exist(
-            f"{audio_file_dir}/whisper/{constants.AudioFileKeyword.PREVIEW.value}.txt")
+        # 1-minute transcripit preview
+        if _check_file_exist(
+                f"{audio_file_dir}/whisper/{constants.AudioFileKeyword.PREVIEW.value}.txt"):
+            success_cnt += 1
+        else:
+            failure_cnt += 1
 
-        # 5-minutes transcripts 
+        # 5-minutes transcripts
         total_length_in_milliseconds = _get_audio_length_in_milliseconds(
             f"{audio_file_dir}/{constants.AudioFileKeyword.FULL.value}.mp3")
         five_minutes_in_milliseconds = 5 * constants.ONE_MINUTE_IN_MILLISECONDS
         upper_bound_index_hourly_chuck = math.ceil(
             total_length_in_milliseconds/five_minutes_in_milliseconds)
         for idx in range(1, upper_bound_index_hourly_chuck+1):
-            _check_file_exist(
-                f"{audio_file_dir}/whisper/{idx}{constants.AudioFileKeyword.FIVE_MINUTES_CHUCK.value}.txt")
+            if _check_file_exist(
+                    f"{audio_file_dir}/whisper/{idx}{constants.AudioFileKeyword.FIVE_MINUTES_CHUCK.value}.txt"):
+                success_cnt += 1
+            else:
+                failure_cnt += 1
+
+    total_cnt = success_cnt + failure_cnt
+    print(
+        f"Transcripts created successfully: {100 * success_cnt/total_cnt}% ({success_cnt}/{total_cnt})")
 
 
 def check_audio_files():
+    failure_cnt, success_cnt = 0, 0
+
     audio_ids = os.listdir(constants.AUDIO_FILE_ROOT)
     for audio_id in audio_ids:
         audio_file_dir = f"{constants.AUDIO_FILE_ROOT}/{audio_id}"
 
-        _check_file_exist(
-            f"{audio_file_dir}/{constants.AudioFileKeyword.FULL.value}.mp3")
-        _check_file_exist(
-            f"{audio_file_dir}/{constants.AudioFileKeyword.PREVIEW.value}.mp3")
+        if _check_file_exist(
+                f"{audio_file_dir}/{constants.AudioFileKeyword.FULL.value}.mp3"):
+            success_cnt += 1
+        else:
+            failure_cnt += 1
+
+        if _check_file_exist(
+                f"{audio_file_dir}/{constants.AudioFileKeyword.PREVIEW.value}.mp3"):
+            success_cnt += 1
+        else:
+            failure_cnt += 1
 
         total_length_in_milliseconds = _get_audio_length_in_milliseconds(
             f"{audio_file_dir}/{constants.AudioFileKeyword.FULL.value}.mp3")
@@ -56,21 +79,34 @@ def check_audio_files():
         upper_bound_index_hourly_chuck = math.ceil(
             total_length_in_milliseconds/one_hour_in_milliseconds)
         for idx in range(1, upper_bound_index_hourly_chuck+1):
-            _check_file_exist(
-                f"{audio_file_dir}/{idx}{constants.AudioFileKeyword.HOUR_CHUCK.value}.mp3")
-
+            if _check_file_exist(
+                    f"{audio_file_dir}/{idx}{constants.AudioFileKeyword.HOUR_CHUCK.value}.mp3"):
+                success_cnt += 1
+            else:
+                failure_cnt += 1
         # 5-minutes audio chuck check
         five_minutes_in_milliseconds = 5 * constants.ONE_MINUTE_IN_MILLISECONDS
         upper_bound_index_hourly_chuck = math.ceil(
             total_length_in_milliseconds/five_minutes_in_milliseconds)
         for idx in range(1, upper_bound_index_hourly_chuck+1):
-            _check_file_exist(
-                f"{audio_file_dir}/{idx}{constants.AudioFileKeyword.FIVE_MINUTES_CHUCK.value}.mp3")
+            if _check_file_exist(
+                    f"{audio_file_dir}/{idx}{constants.AudioFileKeyword.FIVE_MINUTES_CHUCK.value}.mp3"):
+                success_cnt += 1
+            else:
+                failure_cnt += 1
+
+    total_cnt = success_cnt + failure_cnt
+    print(
+        f"Audio files created successfully: {100 * success_cnt/total_cnt}% ({success_cnt}/{total_cnt})")
 
 
-def _check_file_exist(file_path: str):
+def _check_file_exist(file_path: str) -> bool:
     if not os.path.isfile(file_path):
-        raise FileNotFoundError(f"{file_path} is not exist")
+        # continue even one file not exist
+        logging.error(f"{file_path} is not exist")
+        return False
+
+    return True
 
 
 def _get_audio_length_in_milliseconds(file_path: str):
