@@ -13,6 +13,18 @@ import constants
 # TODO: upload environment.yml after this script is completed
 
 
+def record_failure_success(func):
+    """decorator for recording failure/success"""
+    def wrapper(*args, **kwargs):
+        args[0]._total_cnt += 1
+        result = func(*args, **kwargs)
+        if result:
+            args[0]._success_cnt += 1
+        else:
+            args[0]._failure_cnt += 1
+    return wrapper
+
+
 def main():
     """Check data integrity"""
     load_dotenv()
@@ -33,10 +45,8 @@ class DataIntegrityChecker():
         self._success_cnt = 0
         self._total_cnt = 0
 
+    @record_failure_success
     def _check_transcript_repetitive_word_occurance(self, file_path: str) -> None:
-        # TODO: use decorator to avoid code duplication (failure/success/total cnt)
-        self._total_cnt += 1
-
         with open(file_path, "r") as file:
             transcript = file.read()
             words = transcript.split(" ")
@@ -48,22 +58,19 @@ class DataIntegrityChecker():
                 occurance_percentage = round(
                     100 * num_of_occurance/total_word_cnt, 2)
                 if occurance_percentage > 10:
-                    error_str = f"{file_path} has repetitive word occurance: {word} ({occurance_percentage}%))"
-                    logging.error(error_str)
-                    self._failure_cnt += 1
-                    return
+                    # error_str = f"{file_path} has repetitive word occurance: {word} ({occurance_percentage}%))"
+                    # logging.error(error_str)
+                    return False
 
-        self._success_cnt += 1
+        return True
 
+    @record_failure_success
     def _check_file_exist(self, file_path: str) -> None:
-        # TODO: use decorator to avoid code duplication (failure/success/total cnt)
-        self._total_cnt += 1
-
         if not os.path.isfile(file_path):
             logging.error(file_path, "is not exist")
-            self._failure_cnt += 1
-        else:
-            self._success_cnt += 1
+            return False
+
+        return True
 
     def _get_audio_length_in_milliseconds(self, file_path: str) -> None:
         """
