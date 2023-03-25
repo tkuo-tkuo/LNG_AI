@@ -2,13 +2,13 @@
 import os
 import math
 import logging
+from collections import Counter
 
 from dotenv import load_dotenv
 from mutagen.mp3 import MP3
 
 import constants
 
-# TODO: add detection mechanism to avoid suspicious txt (repetitive word occurance)
 # TODO: generate jsonl files based on transcripts into one folder
 # TODO: upload environment.yml after this script is completed
 
@@ -16,9 +16,10 @@ import constants
 def main():
     """Check data integrity"""
     load_dotenv()
-    data_integrity_check = DataIntegrityChecker()
-    data_integrity_check.check_audio_files_creation()
-    data_integrity_check.check_transcripts_creation()
+    data_integrity_checker = DataIntegrityChecker()
+    data_integrity_checker.check_audio_files_creation()
+    data_integrity_checker.check_transcripts_creation()
+    data_integrity_checker.check_transcripts_repetitive_word_occurance()
 
 
 class DataIntegrityChecker():
@@ -32,7 +33,30 @@ class DataIntegrityChecker():
         self._success_cnt = 0
         self._total_cnt = 0
 
+    def _check_transcript_repetitive_word_occurance(self, file_path: str) -> None:
+        # TODO: use decorator to avoid code duplication (failure/success/total cnt)
+        self._total_cnt += 1
+
+        with open(file_path, "r") as file:
+            transcript = file.read()
+            words = transcript.split(" ")
+            words_occurance = Counter(words)
+
+            total_word_cnt = len(words)
+            for word in words_occurance:
+                num_of_occurance = words_occurance[word]
+                occurance_percentage = round(
+                    100 * num_of_occurance/total_word_cnt, 2)
+                if occurance_percentage > 10:
+                    error_str = f"{file_path} has repetitive word occurance: {word} ({occurance_percentage}%))"
+                    logging.error(error_str)
+                    self._failure_cnt += 1
+                    return
+
+        self._success_cnt += 1
+
     def _check_file_exist(self, file_path: str) -> None:
+        # TODO: use decorator to avoid code duplication (failure/success/total cnt)
         self._total_cnt += 1
 
         if not os.path.isfile(file_path):
@@ -67,6 +91,28 @@ class DataIntegrityChecker():
             for idx in range(1, upper_bound_index_hourly_chuck+1):
                 self._check_file_exist(f"{audio_file_dir}/whisper/{idx}"
                                        f"{constants.AudioFileKeyword.FIVE_MINUTES_CHUCK.value}.txt")
+
+        print(f"Transcripts created successfully: {100 * self._success_cnt/self._total_cnt}%",
+              f"({self._success_cnt}/{self._total_cnt})")
+        self._init_cnt()
+
+    def check_transcripts_repetitive_word_occurance(self) -> None:
+        """Check if transcripts have not reptitive word occurance"""
+        audio_ids = os.listdir(constants.AUDIO_FILE_ROOT)
+        for audio_id in audio_ids:
+            audio_file_dir = f"{constants.AUDIO_FILE_ROOT}/{audio_id}"
+
+            # 5-minutes transcripts
+            total_length_in_milliseconds = self._get_audio_length_in_milliseconds(
+                f"{audio_file_dir}/{constants.AudioFileKeyword.FULL.value}.mp3")
+            five_minutes_in_milliseconds = 5 * constants.ONE_MINUTE_IN_MILLISECONDS
+            upper_bound_index_hourly_chuck = math.ceil(
+                total_length_in_milliseconds/five_minutes_in_milliseconds)
+            for idx in range(1, upper_bound_index_hourly_chuck+1):
+                five_minutes_chuck_transcript_path = f"{audio_file_dir}/whisper/{idx}" \
+                                                     f"{constants.AudioFileKeyword.FIVE_MINUTES_CHUCK.value}.txt"
+                self._check_transcript_repetitive_word_occurance(
+                    five_minutes_chuck_transcript_path)
 
         print(f"Transcripts created successfully: {100 * self._success_cnt/self._total_cnt}%",
               f"({self._success_cnt}/{self._total_cnt})")
