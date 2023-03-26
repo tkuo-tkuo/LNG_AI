@@ -5,7 +5,6 @@ import logging
 from collections import Counter
 
 from dotenv import load_dotenv
-from mutagen.mp3 import MP3
 
 import constants
 import utils
@@ -76,13 +75,6 @@ class DataIntegrityChecker():
 
         return True
 
-    def _get_audio_length_in_milliseconds(self, file_path: str) -> None:
-        """
-        Note: use mutagen.mp3 instead of AudioSegment, which has much lower loading time
-        """
-        audio = MP3(file_path)
-        return audio.info.length * 1000
-
     def check_transcripts_creation(self) -> None:
         """Check if transcripts are created successfully"""
         audio_file_dirs = utils.FileUtils.get_audio_file_directories()
@@ -90,16 +82,10 @@ class DataIntegrityChecker():
             # 1-minute transcripit preview
             self._check_file_exist(
                 f"{audio_file_dir}/whisper/{constants.AudioFileKeyword.PREVIEW.value}.txt")
-
+            
             # 5-minutes transcripts
-            total_length_in_milliseconds = self._get_audio_length_in_milliseconds(
-                f"{audio_file_dir}/{constants.AudioFileKeyword.FULL.value}.mp3")
-            five_minutes_in_milliseconds = 5 * constants.ONE_MINUTE_IN_MILLISECONDS
-            upper_bound_index_hourly_chuck = math.ceil(
-                total_length_in_milliseconds/five_minutes_in_milliseconds)
-            for idx in range(1, upper_bound_index_hourly_chuck+1):
-                self._check_file_exist(f"{audio_file_dir}/whisper/{idx}"
-                                       f"{constants.AudioFileKeyword.FIVE_MINUTES_CHUCK.value}.txt")
+            for five_minutes_transcript_path in utils.FileUtils.get_five_minutes_chuck_transcript_paths(audio_file_dir):
+                self._check_file_exist(five_minutes_transcript_path)
 
         print(f"Transcripts created successfully: {100 * self._success_cnt/self._total_cnt}%",
               f"({self._success_cnt}/{self._total_cnt})")
@@ -110,18 +96,10 @@ class DataIntegrityChecker():
         audio_file_dirs = utils.FileUtils.get_audio_file_directories()
         for audio_file_dir in audio_file_dirs:
             # 5-minutes transcripts
-            total_length_in_milliseconds = self._get_audio_length_in_milliseconds(
-                f"{audio_file_dir}/{constants.AudioFileKeyword.FULL.value}.mp3")
-            five_minutes_in_milliseconds = 5 * constants.ONE_MINUTE_IN_MILLISECONDS
-            upper_bound_index_hourly_chuck = math.ceil(
-                total_length_in_milliseconds/five_minutes_in_milliseconds)
-            for idx in range(1, upper_bound_index_hourly_chuck+1):
-                five_minutes_chuck_transcript_path = f"{audio_file_dir}/whisper/{idx}" \
-                                                     f"{constants.AudioFileKeyword.FIVE_MINUTES_CHUCK.value}.txt"
-                self._check_transcript_repetitive_word_occurance(
-                    five_minutes_chuck_transcript_path)
+            for five_minutes_transcript_path in utils.FileUtils.get_five_minutes_chuck_transcript_paths(audio_file_dir):
+                self._check_transcript_repetitive_word_occurance(five_minutes_transcript_path)
 
-        print(f"Transcripts created successfully: {100 * self._success_cnt/self._total_cnt}%",
+        print(f"Transcripts AI-transcribed successfully: {100 * self._success_cnt/self._total_cnt}%",
               f"({self._success_cnt}/{self._total_cnt})")
         self._init_cnt()
 
@@ -135,9 +113,10 @@ class DataIntegrityChecker():
             self._check_file_exist(
                 f"{audio_file_dir}/{constants.AudioFileKeyword.PREVIEW.value}.mp3")
 
-            total_length_in_milliseconds = self._get_audio_length_in_milliseconds(
+            total_length_in_milliseconds = utils.AudioUtils.get_audio_length_in_milliseconds(
                 f"{audio_file_dir}/{constants.AudioFileKeyword.FULL.value}.mp3")
 
+            # TODO: merge below logic with utils.FileUtils.get_five_minutes_chuck_paths
             # 1-hour audio chuck check
             one_hour_in_milliseconds = 60 * constants.ONE_MINUTE_IN_MILLISECONDS
             upper_bound_index_hourly_chuck = math.ceil(
@@ -146,13 +125,9 @@ class DataIntegrityChecker():
                 self._check_file_exist(
                     f"{audio_file_dir}/{idx}{constants.AudioFileKeyword.HOUR_CHUCK.value}.mp3")
 
-            # 5-minutes audio chuck check
-            five_minutes_in_milliseconds = 5 * constants.ONE_MINUTE_IN_MILLISECONDS
-            upper_bound_index_hourly_chuck = math.ceil(
-                total_length_in_milliseconds/five_minutes_in_milliseconds)
-            for idx in range(1, upper_bound_index_hourly_chuck+1):
-                self._check_file_exist(f"{audio_file_dir}/{idx}"
-                                       f"{constants.AudioFileKeyword.FIVE_MINUTES_CHUCK.value}.mp3")
+            # 5-minutes audios
+            for five_minutes_audio_path in utils.FileUtils.get_five_minutes_chuck_audio_paths(audio_file_dir):
+                self._check_file_exist(five_minutes_audio_path)
 
         print(f"Audio files created successfully: {100 * self._success_cnt/self._total_cnt}%",
               f"({self._success_cnt}/{self._total_cnt})")
