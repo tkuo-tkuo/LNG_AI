@@ -34,8 +34,7 @@ class YoutubeAudioFetcher():
         self.base_url = "https://www.googleapis.com/youtube/v3"
         self.api_key = api_key
 
-        if not os.path.exists(constants.RAW_3GG_FILE_ROOT):
-            os.makedirs(constants.RAW_3GG_FILE_ROOT)
+        os.makedirs(constants.RootDirectory.RAW_3GG_FILE_ROOT.value, exist_ok=True)
 
     def obtain_audio_infos(self, channel_id: str, num_of_request_results: int):
         """Fetches (maximum 50) audios informations frrom latest videos given a channel ID
@@ -111,8 +110,10 @@ class YoutubeAudioFetcher():
     def _parse_videos_api_response_and_download_audio(self, resp_json):
         item = resp_json['items'][0]
         youtube_video_url = f"https://www.youtube.com/watch?v={item['id']}"
-        audio_file_dir = f"{constants.AUDIO_FILE_ROOT}/{item['id']}"
-        raw_3gg_file_path = f"{constants.RAW_3GG_FILE_ROOT}/{item['id']}.3gg"
+        audio_file_root = constants.RootDirectory.AUDIO_FILE_ROOT.value
+        raw_3gg_file_root = constants.RootDirectory.RAW_3GG_FILE_ROOT.value
+        audio_file_dir = f"{audio_file_root}/{item['id']}"
+        raw_3gg_file_path = f"{raw_3gg_file_root}/{item['id']}.3gg"
 
         if self._download_audio_file(youtube_video_url, raw_3gg_file_path):
             print(f"Successfully downloaded {item['snippet']['title']}")
@@ -152,8 +153,7 @@ class YoutubeAudioFetcher():
         return True
 
     def _transfer_raw_to_audio_file(self, raw_3gg_file_path: str, audio_file_dir: str):
-        if not os.path.exists(audio_file_dir):
-            os.makedirs(audio_file_dir)
+        os.makedirs(audio_file_dir, exist_ok=True)
 
         # Full audio
         print("processing full audio")

@@ -1,9 +1,12 @@
 import enum
 
 ONE_MINUTE_IN_MILLISECONDS = 1 * 60 * 1000
-AUDIO_FILE_ROOT = "audio_files"
-RAW_3GG_FILE_ROOT = "raw_3gg_files"
 
+class RootDirectory(enum.Enum):
+    """Enum for root directories"""
+    AUDIO_FILE_ROOT = "audio_files"
+    RAW_3GG_FILE_ROOT = "raw_3gg_files"
+    JSONL_DATASET_ROOT = "jsonl_dataset"
 
 class AudioFileKeyword(enum.Enum):
     """Enum for audio files keyword (substr)"""

@@ -52,6 +52,8 @@ class DataIntegrityChecker():
             words = transcript.split(" ")
             words_occurance = Counter(words)
 
+            # check if any word has more than 10% occurance
+            # make this part of logic as a util function in utils.py
             total_word_cnt = len(words)
             for word in words_occurance:
                 num_of_occurance = words_occurance[word]
@@ -81,9 +83,12 @@ class DataIntegrityChecker():
 
     def check_transcripts_creation(self) -> None:
         """Check if transcripts are created successfully"""
-        audio_ids = os.listdir(constants.AUDIO_FILE_ROOT)
+        # TODO: below 4 lines of code are duplicated (3 occurances in this file)
+        # make this part of logic as a util function in utils.py (great idea!)
+        audio_file_root = constants.RootDirectory.AUDIO_FILE_ROOT.value
+        audio_ids = os.listdir(audio_file_root)
         for audio_id in audio_ids:
-            audio_file_dir = f"{constants.AUDIO_FILE_ROOT}/{audio_id}"
+            audio_file_dir = f"{audio_file_root}/{audio_id}"
 
             # 1-minute transcripit preview
             self._check_file_exist(
@@ -105,9 +110,10 @@ class DataIntegrityChecker():
 
     def check_transcripts_repetitive_word_occurance(self) -> None:
         """Check if transcripts have not reptitive word occurance"""
-        audio_ids = os.listdir(constants.AUDIO_FILE_ROOT)
+        audio_file_root = constants.RootDirectory.AUDIO_FILE_ROOT.value
+        audio_ids = os.listdir(audio_file_root)
         for audio_id in audio_ids:
-            audio_file_dir = f"{constants.AUDIO_FILE_ROOT}/{audio_id}"
+            audio_file_dir = f"{audio_file_root}/{audio_id}"
 
             # 5-minutes transcripts
             total_length_in_milliseconds = self._get_audio_length_in_milliseconds(
@@ -127,10 +133,10 @@ class DataIntegrityChecker():
 
     def check_audio_files_creation(self) -> None:
         """Check if audio files are created successfully"""
-
-        audio_ids = os.listdir(constants.AUDIO_FILE_ROOT)
+        audio_file_root = constants.RootDirectory.AUDIO_FILE_ROOT.value
+        audio_ids = os.listdir(audio_file_root)
         for audio_id in audio_ids:
-            audio_file_dir = f"{constants.AUDIO_FILE_ROOT}/{audio_id}"
+            audio_file_dir = f"{audio_file_root}/{audio_id}"
 
             self._check_file_exist(
                 f"{audio_file_dir}/{constants.AudioFileKeyword.FULL.value}.mp3")

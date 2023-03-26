@@ -16,9 +16,10 @@ def main():
         constants.TranscribeMode.WHISPER, keys)
 
     is_preview_only = False
-    audio_ids = os.listdir(constants.AUDIO_FILE_ROOT)
+    audio_file_root = constants.RootDirectory.AUDIO_FILE_ROOT.value
+    audio_ids = os.listdir(audio_file_root)
     for audio_id in audio_ids:
-        audio_file_dir = f"{constants.AUDIO_FILE_ROOT}/{audio_id}"
+        audio_file_dir = f"{audio_file_root}/{audio_id}"
         audio_transcriber.transcribe_dir(audio_file_dir, is_preview_only)
 
 
