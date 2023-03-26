@@ -1,6 +1,8 @@
 """Python script for common utilities"""
 import os
 import math
+import logging
+from collections import Counter
 
 from dotenv import load_dotenv
 from mutagen.mp3 import MP3
@@ -79,3 +81,31 @@ class AudioUtils():
         """
         audio = MP3(file_path)
         return audio.info.length * 1000
+
+
+class TranscriptUtils():
+    """Class for common transcript utilities"""
+    @staticmethod
+    def check_transcript_repetitive_word_occurance(transcript_path: str, threshold: float, log_error: bool) -> bool:
+        """Check if there is any repetitive word in the transcript"""
+        assert threshold >= 0 and threshold <= 1, "threshold should be between 0 and 1"
+
+        with open(transcript_path, "r") as file:
+            transcript = file.read()
+            words = transcript.split(" ")
+            words_occurance = Counter(words)
+
+            # check if any word has more than 10% occurance
+            # make this part of logic as a util function in utils.py
+            total_word_cnt = len(words)
+            for word in words_occurance:
+                num_of_occurance = words_occurance[word]
+                occurance_percentage = round(
+                    100 * num_of_occurance/total_word_cnt, 2)
+                if occurance_percentage > (threshold * 100):
+                    if log_error:
+                        error_str = f"{transcript_path} has repetitive word occurance: {word} ({occurance_percentage}%))"
+                        logging.error(error_str)
+                    return False
+
+        return True

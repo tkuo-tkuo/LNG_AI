@@ -2,7 +2,6 @@
 import os
 import math
 import logging
-from collections import Counter
 
 from dotenv import load_dotenv
 
@@ -47,25 +46,8 @@ class DataIntegrityChecker():
         self._total_cnt = 0
 
     @record_failure_success
-    def _check_transcript_repetitive_word_occurance(self, file_path: str) -> None:
-        with open(file_path, "r") as file:
-            transcript = file.read()
-            words = transcript.split(" ")
-            words_occurance = Counter(words)
-
-            # check if any word has more than 10% occurance
-            # make this part of logic as a util function in utils.py
-            total_word_cnt = len(words)
-            for word in words_occurance:
-                num_of_occurance = words_occurance[word]
-                occurance_percentage = round(
-                    100 * num_of_occurance/total_word_cnt, 2)
-                if occurance_percentage > 10:
-                    # error_str = f"{file_path} has repetitive word occurance: {word} ({occurance_percentage}%))"
-                    # logging.error(error_str)
-                    return False
-
-        return True
+    def _check_transcript_repetitive_word_occurance(self, transcript_path: str) -> None:
+        return utils.TranscriptUtils.check_transcript_repetitive_word_occurance(transcript_path, 0.1, False)
 
     @record_failure_success
     def _check_file_exist(self, file_path: str) -> None:
@@ -82,7 +64,7 @@ class DataIntegrityChecker():
             # 1-minute transcripit preview
             self._check_file_exist(
                 f"{audio_file_dir}/whisper/{constants.AudioFileKeyword.PREVIEW.value}.txt")
-            
+
             # 5-minutes transcripts
             for five_minutes_transcript_path in utils.FileUtils.get_five_minutes_chuck_transcript_paths(audio_file_dir):
                 self._check_file_exist(five_minutes_transcript_path)
@@ -97,7 +79,8 @@ class DataIntegrityChecker():
         for audio_file_dir in audio_file_dirs:
             # 5-minutes transcripts
             for five_minutes_transcript_path in utils.FileUtils.get_five_minutes_chuck_transcript_paths(audio_file_dir):
-                self._check_transcript_repetitive_word_occurance(five_minutes_transcript_path)
+                self._check_transcript_repetitive_word_occurance(
+                    five_minutes_transcript_path)
 
         print(f"Transcripts AI-transcribed successfully: {100 * self._success_cnt/self._total_cnt}%",
               f"({self._success_cnt}/{self._total_cnt})")
@@ -112,7 +95,7 @@ class DataIntegrityChecker():
             self._check_file_exist(
                 f"{audio_file_dir}/{constants.AudioFileKeyword.PREVIEW.value}.mp3")
 
-            # 1-hour audios 
+            # 1-hour audios
             for one_hour_audio_path in utils.FileUtils.get_one_hour_chuck_audio_paths(audio_file_dir):
                 self._check_file_exist(one_hour_audio_path)
 
