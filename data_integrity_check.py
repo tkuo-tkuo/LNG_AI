@@ -109,21 +109,12 @@ class DataIntegrityChecker():
         for audio_file_dir in audio_file_dirs:
             self._check_file_exist(
                 f"{audio_file_dir}/{constants.AudioFileKeyword.FULL.value}.mp3")
-
             self._check_file_exist(
                 f"{audio_file_dir}/{constants.AudioFileKeyword.PREVIEW.value}.mp3")
 
-            total_length_in_milliseconds = utils.AudioUtils.get_audio_length_in_milliseconds(
-                f"{audio_file_dir}/{constants.AudioFileKeyword.FULL.value}.mp3")
-
-            # TODO: merge below logic with utils.FileUtils.get_five_minutes_chuck_paths
-            # 1-hour audio chuck check
-            one_hour_in_milliseconds = 60 * constants.ONE_MINUTE_IN_MILLISECONDS
-            upper_bound_index_hourly_chuck = math.ceil(
-                total_length_in_milliseconds/one_hour_in_milliseconds)
-            for idx in range(1, upper_bound_index_hourly_chuck+1):
-                self._check_file_exist(
-                    f"{audio_file_dir}/{idx}{constants.AudioFileKeyword.HOUR_CHUCK.value}.mp3")
+            # 1-hour audios 
+            for one_hour_audio_path in utils.FileUtils.get_one_hour_chuck_audio_paths(audio_file_dir):
+                self._check_file_exist(one_hour_audio_path)
 
             # 5-minutes audios
             for five_minutes_audio_path in utils.FileUtils.get_five_minutes_chuck_audio_paths(audio_file_dir):
