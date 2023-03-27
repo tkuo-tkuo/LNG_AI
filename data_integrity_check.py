@@ -31,8 +31,6 @@ def main():
     data_integrity_checker.check_transcripts_creation()
     data_integrity_checker.check_transcripts_repetitive_word_occurance()
 
-    # TODO: check if jsonl files are created successfully
-
 
 class DataIntegrityChecker():
     """Class for checking data integrity"""

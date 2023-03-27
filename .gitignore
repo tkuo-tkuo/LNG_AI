@@ -1,3 +1,4 @@
 .env
 raw_3gg_files/
+jsonl_dataset/
 __pycache__/

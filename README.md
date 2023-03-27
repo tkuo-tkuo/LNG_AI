@@ -6,6 +6,7 @@ Automatically generate LNG-like contents based on LNG streaming data
 - [ ] Select & add appropriate license
 - [ ] Include overall design chart
 - [ ] Include references
+- [ ] Add what dataset structures should look like in README
 
 # Technical 
 
@@ -27,8 +28,8 @@ export OPENAI_API_KEY=...
 ## Data Collection & Parsing 
 - [x] Download audio files with its original video informations (e.g., title, URL, and publish date)
 - [x] Transcribe based on audio files (e.g., Whisper), see more details in [candidates evaluation](transcribe_candidates.md)
-- [ ] Convert transcript into prompt/completion JSONL training dataset ([OpenAI dataset preparation](https://platform.openai.com/docs/guides/fine-tuning/preparing-your-dataset))
-- [ ] Add checker to verify data integrity for all audio/transcript/jsonl format
+- [x] Convert transcript into prompt/completion JSONL training dataset ([OpenAI dataset preparation](https://platform.openai.com/docs/guides/fine-tuning/preparing-your-dataset))
+- [ ] Add checker to verify data integrity for all audio/transcript format
 
 **Download audio files**
 
