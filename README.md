@@ -29,7 +29,7 @@ export OPENAI_API_KEY=...
 - [x] Download audio files with its original video informations (e.g., title, URL, and publish date)
 - [x] Transcribe based on audio files (e.g., Whisper), see more details in [candidates evaluation](transcribe_candidates.md)
 - [x] Convert transcript into prompt/completion JSONL training dataset ([OpenAI dataset preparation](https://platform.openai.com/docs/guides/fine-tuning/preparing-your-dataset))
-- [ ] Add checker to verify data integrity for all audio/transcript format
+- [x] Add checker to verify data integrity for all audio/transcript format
 
 **Download audio files**
 
