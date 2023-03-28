@@ -29,7 +29,7 @@ class JsonlDatabaseCreator():
     """Class for creating jsonl database"""
 
     def __init__(self, jsonl_dataset_path: str) -> None:
-        self._jsonl_dataset_path = jsonl_dataset_path
+        pass
 
     def create_jsonl_database(self, repetitive_word_threshold: float, debug: bool):
         """Create jsonl database"""
@@ -51,17 +51,12 @@ class JsonlDatabaseCreator():
                                      "completion": words[idx+1]}
                             jsonl_dataset_list.append(jsonl)
 
-        # Write jsonl_dataset_list to jsonl file
-        os.makedirs(
-            constants.RootDirectory.JSONL_DATASET_ROOT.value, exist_ok=True)
-        with open(os.path.join(self._jsonl_dataset_path, "jsonl_dataset.jsonl"), "w") as file:
-            for jsonl in jsonl_dataset_list:
-                json.dump(jsonl, file)
-                file.write('\n')
-
-        # Log
-        print(
-            f"JSONL dataset successfully created with size (threshold={repetitive_word_threshold}): {len(jsonl_dataset_list)} records")
+        # Store a portion of the jsonl_dataset_list
+        portions = [0.005, 0.01, 0.1, 0.2, 0.3,
+                    0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+        for portion in portions:
+            utils.JsonlUtils.store_portion_jsonl(
+                jsonl_dataset_list, portion)
 
 
 if __name__ == "__main__":

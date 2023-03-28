@@ -2,6 +2,8 @@
 import os
 import math
 import logging
+import random
+import json
 from collections import Counter
 
 from dotenv import load_dotenv
@@ -109,3 +111,32 @@ class TranscriptUtils():
                     return False
 
         return True
+
+
+class JsonlUtils():
+    """Class for common jsonl utilities"""
+    @staticmethod
+    def store_portion_jsonl(jsonls: list[dict],  portion: float):
+        """Store a portion of the jsonls"""
+        assert portion > 0 and portion <= 1, "portion should be between 0 and 1"
+
+        # Get the number of jsonls to store
+        num_of_jsonls_to_store = math.ceil(len(jsonls) * portion)
+
+        # Sort the jsonls randomly
+        random.shuffle(jsonls)
+
+        # Save the jsonls to export_jsonl_path
+        os.makedirs(constants.RootDirectory.JSONL_DATASET_ROOT.value, exist_ok=True)
+        export_json_file = f"jsonl_dataset_{int(portion * 100)}_percent_{num_of_jsonls_to_store}.jsonl"
+        export_jsonl_path = os.path.join(
+            constants.RootDirectory.JSONL_DATASET_ROOT.value, export_json_file)
+        with open(export_jsonl_path, "w") as file:
+            for idx in range(num_of_jsonls_to_store):
+                jsonl = jsonls[idx]
+                json.dump(jsonl, file)
+                file.write('\n')
+
+            # Log
+            print(f"JSONL dataset successfully created with size (portion={portion}): "
+                  f"{num_of_jsonls_to_store} records")
