@@ -8,6 +8,7 @@ import argparse
 from LNG_AI import utils
 from LNG_AI import constants
 
+
 def main():
     """Create jsonl database"""
     # parse command line arguments
@@ -19,8 +20,7 @@ def main():
     assert args.repetitive_word_threshold >= 0 and args.repetitive_word_threshold <= 1
 
     load_dotenv()
-    jsonl_database_creator = JsonlDatabaseCreator(
-        constants.RootDirectory.JSONL_DATASET_ROOT.value)
+    jsonl_database_creator = JsonlDatabaseCreator()
     jsonl_database_creator.create_jsonl_database(
         repetitive_word_threshold=args.repetitive_word_threshold, debug=False)
 
@@ -28,7 +28,7 @@ def main():
 class JsonlDatabaseCreator():
     """Class for creating jsonl database"""
 
-    def __init__(self, jsonl_dataset_path: str) -> None:
+    def __init__(self) -> None:
         pass
 
     def create_jsonl_database(self, repetitive_word_threshold: float, debug: bool):
@@ -43,12 +43,17 @@ class JsonlDatabaseCreator():
                 if utils.TranscriptUtils.check_transcript_repetitive_word_occurance(five_minutes_transcript_path, repetitive_word_threshold, debug):
                     with open(five_minutes_transcript_path, "r") as file:
                         words = file.read().split(" ")
-                        assert len(words) >= 2
+                        num_of_sentences_to_consider = 3
+                        assert len(words) >= num_of_sentences_to_consider + \
+                            1, "Not enough words to create jsonl"
 
-                        for idx in range(0, len(words)-1):
+                        for idx in range(0, len(words)-num_of_sentences_to_consider):
                             # Reference: https://platform.openai.com/docs/guides/fine-tuning
-                            jsonl = {"prompt": words[idx],
-                                     "completion": words[idx+1]}
+                            # TODO: move separator to constants.py
+                            separator = "/!"
+
+                            jsonl = {"prompt": separator.join(words[idx:idx+num_of_sentences_to_consider]),
+                                     "completion": words[idx+num_of_sentences_to_consider]}
                             jsonl_dataset_list.append(jsonl)
 
         # Store a portion of the jsonl_dataset_list
