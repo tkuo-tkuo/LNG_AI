@@ -7,6 +7,7 @@ Automatically generate LNG-like contents based on LNG streaming data
 - [ ] Include overall design chart
 - [ ] Include references
 - [ ] Add what dataset structures should look like in README
+- [ ] Don't directly store data on GitHub repository for faster pull/push speed, leaving link to zip file or instructions instead
 
 # Technical 
 

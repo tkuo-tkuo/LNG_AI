@@ -1,4 +1,6 @@
 .env
 raw_3gg_files/
 jsonl_dataset/
+audio_files/
+audio_infos.*
 __pycache__/
