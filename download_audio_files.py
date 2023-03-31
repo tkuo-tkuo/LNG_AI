@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from pydub import AudioSegment
 import pytube
 
-import constants
+from LNG_AI import constants
 
 
 def main():
@@ -34,7 +34,8 @@ class YoutubeAudioFetcher():
         self.base_url = "https://www.googleapis.com/youtube/v3"
         self.api_key = api_key
 
-        os.makedirs(constants.RootDirectory.RAW_3GG_FILE_ROOT.value, exist_ok=True)
+        os.makedirs(
+            constants.RootDirectory.RAW_3GG_FILE_ROOT.value, exist_ok=True)
 
     def obtain_audio_infos(self, channel_id: str, num_of_request_results: int):
         """Fetches (maximum 50) audios informations frrom latest videos given a channel ID

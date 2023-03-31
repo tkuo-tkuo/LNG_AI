@@ -5,8 +5,8 @@ import logging
 
 from dotenv import load_dotenv
 
-import constants
-import utils
+from LNG_AI import utils
+from LNG_AI import constants
 
 # TODO: upload environment.yml after this script is completed
 

@@ -9,7 +9,7 @@ from collections import Counter
 from dotenv import load_dotenv
 from mutagen.mp3 import MP3
 
-import constants
+from LNG_AI import constants
 
 # TODO: use Google style linting
 
@@ -140,3 +140,11 @@ class JsonlUtils():
             # Log
             print(f"JSONL dataset successfully created with size (portion={portion}): "
                   f"{num_of_jsonls_to_store} records")
+            
+    def get_jsonls(jsonl_path: str) -> list[dict]:
+        """Read jsonl file"""
+        jsonls = []
+        with open(jsonl_path, "r") as file:
+            for line in file:
+                jsonls.append(json.loads(line))
+        return jsonls

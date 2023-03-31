@@ -4,7 +4,8 @@ import os
 from dotenv import load_dotenv
 import openai
 
-import constants
+from LNG_AI import utils
+from LNG_AI import constants
 
 
 def main():

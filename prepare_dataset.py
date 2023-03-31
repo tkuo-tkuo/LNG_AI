@@ -1,12 +1,12 @@
 """Python script for creating jsonl database"""
-import utils
-import constants
 import os
 import json
 
 from dotenv import load_dotenv
 import argparse
 
+from LNG_AI import utils
+from LNG_AI import constants
 
 def main():
     """Create jsonl database"""
