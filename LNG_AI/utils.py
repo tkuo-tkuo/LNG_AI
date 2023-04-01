@@ -171,3 +171,39 @@ class JsonlUtils():
             # Log
             print(f"JSONL dataset successfully created with size (portion={portion}): "
                   f"{num_of_jsonls_to_store} records")
+
+    @staticmethod
+    def create_jsonl_database(repetitive_word_threshold: float, debug: bool):
+        """Create jsonl database"""
+        jsonl_dataset_list = []
+
+        # Get list of jsonl
+        audio_file_dirs = FileUtils.get_audio_file_directories()
+        for audio_file_dir in audio_file_dirs:
+            for five_minutes_transcript_path in FileUtils.get_five_minutes_chuck_transcript_paths(
+                    audio_file_dir):
+                # True means okay (not repetitive)
+                if TranscriptUtils.check_transcript_repetitive_word_occurance(
+                        five_minutes_transcript_path, repetitive_word_threshold, debug):
+                    with open(five_minutes_transcript_path, "r") as file:
+                        words = file.read().split(" ")
+                        num_of_sentences_to_consider = 3
+                        assert len(words) >= num_of_sentences_to_consider + \
+                            1, "Not enough words to create jsonl"
+
+                        for idx in range(0, len(words) -
+                                         num_of_sentences_to_consider):
+                            # Reference: https://platform.openai.com/docs/guides/fine-tuning
+                            # TODO: move separator to constants.py
+                            separator = "/!"
+
+                            jsonl = {"prompt": separator.join(words[idx:idx + num_of_sentences_to_consider]),
+                                     "completion": words[idx + num_of_sentences_to_consider]}
+                            jsonl_dataset_list.append(jsonl)
+
+        # Store a portion of the jsonl_dataset_list
+        portions = [0.005, 0.01, 0.1, 0.2, 0.3,
+                    0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+        for portion in portions:
+            JsonlUtils.store_portion_jsonl(
+                jsonl_dataset_list, portion)
