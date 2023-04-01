@@ -13,13 +13,13 @@ Automatically generate LNG-like contents based on LNG streaming data
 
 ## Setup  
 
-Create your environment by conda
+### Create your environment by conda
 ```bash
 $ conda env create -f environment.yml
 $ conda activate lng_ai
 ```
 
-Create `.env` and place your keys within like
+### Create `.env` and place your keys within like
 ```bash
 export yt_api_key=...
 export OPENAI_API_KEY=...
@@ -31,38 +31,30 @@ export OPENAI_API_KEY=...
 - [x] Convert transcript into prompt/completion JSONL training dataset ([OpenAI dataset preparation](https://platform.openai.com/docs/guides/fine-tuning/preparing-your-dataset))
 - [x] Add checker to verify data integrity for all audio/transcript format
 
-**Download audio files**
-
+### Download audio files
 ```bash
 $ python3 download_audio_files.py 
 ```
 Results will be stored in tables with two formats supported, default paths are `audio_infos.md` and `audio_infos.csv`
 
-**Transcribe audio files**
-
+### Transcribe audio files
 ```bash
 $ python3 transcribe_audio_files.py 
 ```
 
-**Make jsonl dataset based on transcripts (0.1 threshold used)**
-
+### Make jsonl dataset based on transcripts (0.1 threshold used)
 ```bash
 $ python3 prepare_dataset.py --repetitive_word_threshold 0.1
 ```
 
-Note that even we leverage OpenAI Whisper to transcribe from audio to transcripts, some results of transcripts seem problematic (same word occur repetitively). 
+| Threshold | 0.01 | 0.05 | 0.1 | 0.25 | 0.5 |
+| ------ | -- | -- | -- | -- | -- | 
+| Remaining % (# of transcripts) | 0.95% | 74.71% | 90.48% | 96.9% | 98.19% |
 
-Hence we have a mechanism to filter out transcripts that have certain word occurs more than given threshold (e.g., 10%). 
-
-For instance, if a word "哈哈" appears 18% in the transcript, this transcript will be excluded in the training dataset if threshold is 10% (not excluded if threshold is 20%).
-
-| Threshold | Remaining Dataset Size | Remaining % |
-| --- | --- | --- |
-| 0.01 | 632 | 0.95 |
-| 0.05 | 49567 | 74.71 |
-| 0.1 | 60033 | 90.48 |
-| 0.25 | 64292 | 96.9 |
-| 0.5 | 65148 | 98.19 |
+- **Trick 1: filter out transcrirpts that have over-reptitive word (e.g., >10%)**
+  - For instance, if a word "哈哈" appears 18% in the transcript, this transcript will be excluded in the training dataset.
+  - Note that we leverage OpenAI Whisper to transcribe, some transcripts transcribed could be problematic (repetitive words).
+- **Trick 2: use more than 1 sentences (e.g., 3) in prompt to make chat completion more coherent**
 
 ## Model Training
 - [x] Select & download suitable LLM (fine-tuned [Babbage model](https://openai.com/pricing) by OpenAI)
