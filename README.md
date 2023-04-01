@@ -12,7 +12,6 @@ Automatically generate LNG-like contents based on LNG streaming data
 # Technical 
 
 ## Setup  
-- [x] Support conda environment reconstruction
 
 Create your environment by conda
 ```bash
@@ -68,6 +67,8 @@ For instance, if a word "哈哈" appears 18% in the transcript, this transcript 
 ## Model Training
 - [x] Select & download suitable LLM (fine-tuned [Babbage model](https://openai.com/pricing) by OpenAI)
 - [x] Fine-tune by LNG data
+- [x] Manually verify results & gradually improve
+- [x] Implement text generation from fine-tuned models
 
 **Fine-tune from scratch**
 
@@ -95,8 +96,6 @@ $ python3 fine_tune_openai_model.py --mode 2 --model_name babbage:ft-personal-20
 $  python3 fine_tune_openai_model.py --mode 3 --model_id $MODEL_ID
 $  python3 fine_tune_openai_model.py --mode 3 --model_id $ft-YYivAE5wK5tEGjKhJblhimCq
 ```
-
-- [ ] Manually verify results & gradually improve
 
 ## Provide user-friendly UI for public
 - [ ] Developer & construct website locally
