@@ -40,14 +40,14 @@ class YoutubeAudioFetcher():
     def obtain_audio_infos(self, channel_id: str, num_of_request_results: int):
         """Fetches (maximum 50) audios informations frrom latest videos given a channel ID
 
-        Note: maximum 50 videos per query (restricted by youtube API) 
+        Note: maximum 50 videos per query (restricted by youtube API)
 
         Args:
             channel_id: channel ID of the youtube channel
 
         Returns:
-            A list of dict, where contains information of a video 
-            For instance: {'id':..., 'title':..., 'publishedAt':..., 
+            A list of dict, where contains information of a video
+            For instance: {'id':..., 'title':..., 'publishedAt':...,
                            'audio_source_url':..., 'audio_file_path':...}
         """
         uploads_id = self._get_uploads_id(channel_id)
@@ -82,7 +82,8 @@ class YoutubeAudioFetcher():
         return query_url
 
     # Reference: https://developers.google.com/youtube/v3/docs/playlistItems
-    def __construct_playlistitems_api_query_url(self, uploads_id: str, num_of_request_results: int):
+    def __construct_playlistitems_api_query_url(
+            self, uploads_id: str, num_of_request_results: int):
         query_path = f'part=contentDetails&playlistId={uploads_id}&maxResults={num_of_request_results}'
         query_url = f'{self.base_url}/playlistItems?key={self.api_key}&{query_path}'
         return query_url
@@ -95,7 +96,8 @@ class YoutubeAudioFetcher():
 
     def _send_query(self, query_url: str):
         resp = requests.get(query_url, timeout=5)
-        return resp.json() if resp.status_code == requests.codes['ok'] else None
+        return resp.json(
+        ) if resp.status_code == requests.codes['ok'] else None
 
     def _parse_channels_api_response(self, resp_json):
         uploads_id = None
@@ -106,7 +108,8 @@ class YoutubeAudioFetcher():
         return uploads_id
 
     def _parse_playlistitems_api_response(self, resp_json):
-        return [item['contentDetails']['videoId'] for item in resp_json['items']]
+        return [item['contentDetails']['videoId']
+                for item in resp_json['items']]
 
     def _parse_videos_api_response_and_download_audio(self, resp_json):
         item = resp_json['items'][0]
@@ -134,7 +137,8 @@ class YoutubeAudioFetcher():
         }
         return audio_info
 
-    def _download_audio_file(self, youtube_video_url: str, raw_3gg_file_path: str) -> bool:
+    def _download_audio_file(self, youtube_video_url: str,
+                             raw_3gg_file_path: str) -> bool:
         if os.path.isfile(raw_3gg_file_path):
             print(f"{raw_3gg_file_path} already exists, avoid downloading")
             return True
@@ -148,12 +152,13 @@ class YoutubeAudioFetcher():
                 output_path=file_dir, filename=file_name)
         # lazy to specify exception type(s) for now
         # catch all potential errors
-        except:
+        except BaseException:
             return False
 
         return True
 
-    def _transfer_raw_to_audio_file(self, raw_3gg_file_path: str, audio_file_dir: str):
+    def _transfer_raw_to_audio_file(
+            self, raw_3gg_file_path: str, audio_file_dir: str):
         os.makedirs(audio_file_dir, exist_ok=True)
 
         # Full audio
@@ -176,17 +181,17 @@ class YoutubeAudioFetcher():
         one_hour_in_milliseconds = 60 * constants.ONE_MINUTE_IN_MILLISECONDS
         i = 0
         # next hour still not yet finish
-        while (i+1) * one_hour_in_milliseconds < total_length_in_milliseconds:
+        while (i + 1) * one_hour_in_milliseconds < total_length_in_milliseconds:
             begin = i * one_hour_in_milliseconds
-            end = (i+1) * one_hour_in_milliseconds
+            end = (i + 1) * one_hour_in_milliseconds
             one_hour_chuck_audio = audio[begin:end]
             self._export_if_not_exist(
-                one_hour_chuck_audio,  f"{audio_file_dir}/{i+1}_hour_chuck.mp3")
+                one_hour_chuck_audio, f"{audio_file_dir}/{i+1}_hour_chuck.mp3")
             i += 1
 
         last_hour_check_audio = audio[i * one_hour_in_milliseconds:]
         self._export_if_not_exist(
-            last_hour_check_audio,  f"{audio_file_dir}/{i+1}_hour_chuck.mp3")
+            last_hour_check_audio, f"{audio_file_dir}/{i+1}_hour_chuck.mp3")
 
         # 5-minutes audio chucks
         print("processing audio chucks per 5 minutes ")
@@ -194,17 +199,17 @@ class YoutubeAudioFetcher():
         five_minutes_in_milliseconds = 5 * constants.ONE_MINUTE_IN_MILLISECONDS
         i = 0
         # next hour still not yet finish
-        while (i+1) * five_minutes_in_milliseconds < total_length_in_milliseconds:
+        while (i + 1) * five_minutes_in_milliseconds < total_length_in_milliseconds:
             begin = i * five_minutes_in_milliseconds
-            end = (i+1) * five_minutes_in_milliseconds
+            end = (i + 1) * five_minutes_in_milliseconds
             one_hour_chuck_audio = audio[begin:end]
             self._export_if_not_exist(
-                one_hour_chuck_audio,  f"{audio_file_dir}/{i+1}_5_mins_chuck.mp3")
+                one_hour_chuck_audio, f"{audio_file_dir}/{i+1}_5_mins_chuck.mp3")
             i += 1
 
         last_hour_check_audio = audio[i * five_minutes_in_milliseconds:]
         self._export_if_not_exist(
-            last_hour_check_audio,  f"{audio_file_dir}/{i+1}_5_mins_chuck.mp3")
+            last_hour_check_audio, f"{audio_file_dir}/{i+1}_5_mins_chuck.mp3")
 
     def _export_if_not_exist(self, audio, export_path):
         if os.path.isfile(export_path):

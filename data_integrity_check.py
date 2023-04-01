@@ -44,8 +44,10 @@ class DataIntegrityChecker():
         self._total_cnt = 0
 
     @record_failure_success
-    def _check_transcript_repetitive_word_occurance(self, transcript_path: str) -> None:
-        return utils.TranscriptUtils.check_transcript_repetitive_word_occurance(transcript_path, 0.1, False)
+    def _check_transcript_repetitive_word_occurance(
+            self, transcript_path: str) -> None:
+        return utils.TranscriptUtils.check_transcript_repetitive_word_occurance(
+            transcript_path, 0.1, False)
 
     @record_failure_success
     def _check_file_exist(self, file_path: str) -> None:
@@ -64,7 +66,8 @@ class DataIntegrityChecker():
                 f"{audio_file_dir}/whisper/{constants.AudioFileKeyword.PREVIEW.value}.txt")
 
             # 5-minutes transcripts
-            for five_minutes_transcript_path in utils.FileUtils.get_five_minutes_chuck_transcript_paths(audio_file_dir):
+            for five_minutes_transcript_path in utils.FileUtils.get_five_minutes_chuck_transcript_paths(
+                    audio_file_dir):
                 self._check_file_exist(five_minutes_transcript_path)
 
         print(f"Transcripts created successfully: {100 * self._success_cnt/self._total_cnt}%",
@@ -76,7 +79,8 @@ class DataIntegrityChecker():
         audio_file_dirs = utils.FileUtils.get_audio_file_directories()
         for audio_file_dir in audio_file_dirs:
             # 5-minutes transcripts
-            for five_minutes_transcript_path in utils.FileUtils.get_five_minutes_chuck_transcript_paths(audio_file_dir):
+            for five_minutes_transcript_path in utils.FileUtils.get_five_minutes_chuck_transcript_paths(
+                    audio_file_dir):
                 self._check_transcript_repetitive_word_occurance(
                     five_minutes_transcript_path)
 
@@ -94,11 +98,13 @@ class DataIntegrityChecker():
                 f"{audio_file_dir}/{constants.AudioFileKeyword.PREVIEW.value}.mp3")
 
             # 1-hour audios
-            for one_hour_audio_path in utils.FileUtils.get_one_hour_chuck_audio_paths(audio_file_dir):
+            for one_hour_audio_path in utils.FileUtils.get_one_hour_chuck_audio_paths(
+                    audio_file_dir):
                 self._check_file_exist(one_hour_audio_path)
 
             # 5-minutes audios
-            for five_minutes_audio_path in utils.FileUtils.get_five_minutes_chuck_audio_paths(audio_file_dir):
+            for five_minutes_audio_path in utils.FileUtils.get_five_minutes_chuck_audio_paths(
+                    audio_file_dir):
                 self._check_file_exist(five_minutes_audio_path)
 
         print(f"Audio files created successfully: {100 * self._success_cnt/self._total_cnt}%",

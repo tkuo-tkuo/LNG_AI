@@ -86,7 +86,8 @@ class AudioTranscriber():
         transcript = openai.Audio.transcribe("whisper-1", audio_file)
         return transcript['text']
 
-    def _whisper_parse_and_store_transcribe_result(self, raw_result_str: str, output_txt_path: str):
+    def _whisper_parse_and_store_transcribe_result(
+            self, raw_result_str: str, output_txt_path: str):
         with open(output_txt_path, "w", encoding="utf-8") as text_file:
             text_file.write(raw_result_str)
 

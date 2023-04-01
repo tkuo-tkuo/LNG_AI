@@ -45,10 +45,12 @@ class FileUtils():
                                                       ext_type="transcript")
 
     @staticmethod
-    def get_five_minutes_chuck_paths(audio_file_dir: str, chuck_keyword: constants.AudioFileKeyword, ext_type: str) -> list:
+    def get_five_minutes_chuck_paths(
+            audio_file_dir: str, chuck_keyword: constants.AudioFileKeyword, ext_type: str) -> list:
         """Get five minutes chuck"""
         # only five-minutes and 1-hour chuck are supported
-        if chuck_keyword not in [constants.AudioFileKeyword.FIVE_MINUTES_CHUCK, constants.AudioFileKeyword.HOUR_CHUCK]:
+        if chuck_keyword not in [
+                constants.AudioFileKeyword.FIVE_MINUTES_CHUCK, constants.AudioFileKeyword.HOUR_CHUCK]:
             raise ValueError(f"Invalid chuck_keyword: {chuck_keyword}")
 
         # Get the total length of the audio file
@@ -59,11 +61,11 @@ class FileUtils():
         chuck_in_milliseconds = 5 * constants.ONE_MINUTE_IN_MILLISECONDS if chuck_keyword == constants.AudioFileKeyword.FIVE_MINUTES_CHUCK else 60 * \
             constants.ONE_MINUTE_IN_MILLISECONDS
         upper_bound_index = math.ceil(
-            total_length_in_milliseconds/chuck_in_milliseconds)
+            total_length_in_milliseconds / chuck_in_milliseconds)
 
         # Return list
         paths = []
-        for idx in range(1, upper_bound_index+1):
+        for idx in range(1, upper_bound_index + 1):
             if ext_type == "audio":
                 path = f"{audio_file_dir}/{idx}{chuck_keyword.value}.mp3"
             elif ext_type == "transcript":
@@ -88,7 +90,8 @@ class AudioUtils():
 class TranscriptUtils():
     """Class for common transcript utilities"""
     @staticmethod
-    def check_transcript_repetitive_word_occurance(transcript_path: str, threshold: float, log_error: bool) -> bool:
+    def check_transcript_repetitive_word_occurance(
+            transcript_path: str, threshold: float, log_error: bool) -> bool:
         """Check if there is any repetitive word in the transcript"""
         assert threshold >= 0 and threshold <= 1, "threshold should be between 0 and 1"
 
@@ -103,7 +106,7 @@ class TranscriptUtils():
             for word in words_occurance:
                 num_of_occurance = words_occurance[word]
                 occurance_percentage = round(
-                    100 * num_of_occurance/total_word_cnt, 2)
+                    100 * num_of_occurance / total_word_cnt, 2)
                 if occurance_percentage > (threshold * 100):
                     if log_error:
                         error_str = f"{transcript_path} has repetitive word occurance: {word} ({occurance_percentage}%))"
@@ -116,7 +119,7 @@ class TranscriptUtils():
 class JsonlUtils():
     """Class for common jsonl utilities"""
     @staticmethod
-    def store_portion_jsonl(jsonls: list[dict],  portion: float):
+    def store_portion_jsonl(jsonls: list[dict], portion: float):
         """Store a portion of the jsonls"""
         assert portion > 0 and portion <= 1, "portion should be between 0 and 1"
 
@@ -127,7 +130,9 @@ class JsonlUtils():
         random.shuffle(jsonls)
 
         # Save the jsonls to export_jsonl_path
-        os.makedirs(constants.RootDirectory.JSONL_DATASET_ROOT.value, exist_ok=True)
+        os.makedirs(
+            constants.RootDirectory.JSONL_DATASET_ROOT.value,
+            exist_ok=True)
         export_json_file = f"jsonl_dataset_{int(portion * 100)}_percent_{num_of_jsonls_to_store}.jsonl"
         export_jsonl_path = os.path.join(
             constants.RootDirectory.JSONL_DATASET_ROOT.value, export_json_file)
@@ -140,7 +145,7 @@ class JsonlUtils():
             # Log
             print(f"JSONL dataset successfully created with size (portion={portion}): "
                   f"{num_of_jsonls_to_store} records")
-            
+
     def get_jsonls(jsonl_path: str) -> list[dict]:
         """Read jsonl file"""
         jsonls = []

@@ -8,6 +8,7 @@ AVG_NUM_OF_TOKENS_PER_GENERATED_SENTENCE = 18
 SEPARRATOR = "/!"
 PROMPT_SENTENCES = ["早安早安", "開了!", "欸我跟你們說"]
 
+
 class OpenaiBabbageModelInteractionMode(enum.Enum):
     """Enum for OpenAI Babbage model interaction mode"""
     FINE_TUNE = 0
