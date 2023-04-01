@@ -67,7 +67,35 @@ For instance, if a word "哈哈" appears 18% in the transcript, this transcript 
 
 ## Model Training
 - [x] Select & download suitable LLM (fine-tuned [Babbage model](https://openai.com/pricing) by OpenAI)
-- [ ] Fine-tune by LNG data
+- [x] Fine-tune by LNG data
+
+**Fine-tune from scratch**
+
+```bash
+$ python3 fine_tune_openai_model.py --mode 0 --jsonl_dataset_path $JSONL_DATASET_PATH
+$ python3 fine_tune_openai_model.py --mode 0 --jsonl_dataset_path jsonl_dataset/jsonl_dataset_50_percent_29608.jsonl
+```
+
+**View fine-tune models (include corresponding training history)**
+
+```bash
+$ python3 fine_tune_openai_model.py --mode 1
+```
+
+**Test fine-tune models**
+
+```bash
+$ python3 fine_tune_openai_model.py --mode 2 --model_name $MODEL_NAME --num_of_sentences_generated $NUM_OF_SENTENCES_GENERATED
+$ python3 fine_tune_openai_model.py --mode 2 --model_name babbage:ft-personal-2023-03-31-16-53-00 --num_of_sentences_generated 10
+```
+
+**View training process**
+
+```bash
+$  python3 fine_tune_openai_model.py --mode 3 --model_id $MODEL_ID
+$  python3 fine_tune_openai_model.py --mode 3 --model_id $ft-YYivAE5wK5tEGjKhJblhimCq
+```
+
 - [ ] Manually verify results & gradually improve
 
 ## Provide user-friendly UI for public
