@@ -1,4 +1,5 @@
 """Python script for common utilities"""
+import csv
 import os
 import math
 import logging
@@ -10,8 +11,6 @@ from dotenv import load_dotenv
 from mutagen.mp3 import MP3
 
 from LNG_AI import constants
-
-# TODO: use Google style linting
 
 
 class FileUtils():
@@ -74,6 +73,33 @@ class FileUtils():
                 raise ValueError(f"Invalid ext_type: {ext_type}")
             paths.append(path)
         return paths
+
+    @staticmethod
+    def store_as_html(video_infos, store_file_path):
+        '''helper function to store latest video infos in md file'''
+        with open(store_file_path, "w", encoding="utf-8") as html_file:
+            html_file.write(
+                '| Title | Audio Dir | Published at | ID | Source URL |\n')
+            html_file.write('| ------ | ------ | --- | --- | ------ |\n')
+            # TODO: add relative links for audio files
+            # https://github.com/tkuo-tkuo/LNG_AI/issues/6
+            for video_info in video_infos:
+                html_file.write(
+                    f'| {video_info["title"]} | {video_info["audio_file_dir"]} '
+                    f'| {video_info["publishedAt"]} | {video_info["id"]} '
+                    f'| {video_info["audio_source_url"]} |\n')
+
+    @staticmethod
+    def store_as_csv(video_infos, store_file_path):
+        '''helper function to store latest video infos in csv file'''
+        with open(store_file_path, "w", encoding="utf-8") as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv_writer.writerow(["Title", "Audio Dir",
+                                "Published at", "ID", "Source URL"])
+
+            rows = [[video_info["title"], video_info["audio_file_dir"], video_info["publishedAt"],
+                    video_info["id"], video_info["audio_source_url"]] for video_info in video_infos]
+            csv_writer.writerows(rows)
 
 
 class AudioUtils():
@@ -145,11 +171,3 @@ class JsonlUtils():
             # Log
             print(f"JSONL dataset successfully created with size (portion={portion}): "
                   f"{num_of_jsonls_to_store} records")
-
-    def get_jsonls(jsonl_path: str) -> list[dict]:
-        """Read jsonl file"""
-        jsonls = []
-        with open(jsonl_path, "r") as file:
-            for line in file:
-                jsonls.append(json.loads(line))
-        return jsonls
