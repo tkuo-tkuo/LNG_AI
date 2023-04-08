@@ -265,15 +265,15 @@ class OpenaiUtils():
                 constants.PROMPT_SENTENCES), f"length of prompt sentences must be {len(constants.PROMPT_SENTENCES)}"
 
             prompt = constants.SEPARRATOR.join(sentences)
-            print(f"Prompt: {prompt}")
             encoded_prompt = prompt.encode("unicode_escape").decode("utf-8")
+            print(f"Prompt: {prompt}")
             print(f"Encoded prompt: {encoded_prompt}")
 
             num_tokens = random.randint(int(constants.AVG_NUM_OF_TOKENS_PER_GENERATED_SENTENCE * 0.8),
                                         int(constants.AVG_NUM_OF_TOKENS_PER_GENERATED_SENTENCE * 1.2))
             response = openai.Completion.create(
                 model=model_name,
-                prompt=prompt,
+                prompt=encoded_prompt,
                 max_tokens=num_tokens,
                 presence_penalty=0.2,
                 frequency_penalty=0.2)
