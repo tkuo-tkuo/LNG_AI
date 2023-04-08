@@ -273,7 +273,7 @@ class OpenaiUtils():
                                         int(constants.AVG_NUM_OF_TOKENS_PER_GENERATED_SENTENCE * 1.2))
             response = openai.Completion.create(
                 model=model_name,
-                prompt=encoded_prompt,
+                prompt=prompt,
                 max_tokens=num_tokens,
                 presence_penalty=0.2,
                 frequency_penalty=0.2)
