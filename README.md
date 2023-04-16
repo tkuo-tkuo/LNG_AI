@@ -67,3 +67,8 @@ Dataset Preparation Tricks
   - For instance, if a word "哈哈" appears 18% in the transcript, this transcript will be excluded in the training dataset.
   - Note that we leverage OpenAI Whisper to transcribe, some transcripts transcribed could be problematic (repetitive words).
 - Use more than 1 sentences (e.g., 3) in prompt to make chat completion more coherent
+
+Model
+- 1-year data (2022-2023)
+- 4 iterations fine-tuning
+- OpenAI Baddage model 
